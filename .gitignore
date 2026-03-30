@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+Frontend/node_modules/
+Server/node_modules/
+
+# Build artifacts
+Frontend/dist/
+Frontend/dist-ssr/
+Server/coverage/
+
+# Environment files
+.env
+.env.*
+Server/.env
+Frontend/.env
+Frontend/.env.*
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+!.vscode/extensions.json
+.idea/
+
+# Runtime/generated files
+Server/public/uploads/
+Server/report-test.docx
