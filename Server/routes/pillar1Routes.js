@@ -73,7 +73,7 @@ function parseArrayField(value) {
 // ==================== SECTION 1: INNOVATIVE TEACHING METHODOLOGIES ====================
 router.post('/innovative-teaching', upload.single('image'), async (req, res) => {
     try {
-        const { department, courseCode, courseName, topic, teachingMethod } = req.body;
+        const { department, courseCode, courseName, topic, teachingMethod, month, academicYear } = req.body;
         const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
         const teaching = new InnovativeTeaching({
@@ -82,6 +82,8 @@ router.post('/innovative-teaching', upload.single('image'), async (req, res) => 
             courseName,
             topic,
             teachingMethod,
+            month,
+            academicYear,
             imagePath
         });
 
@@ -104,7 +106,7 @@ router.get('/innovative-teaching', async (req, res) => {
 // ==================== SECTION 2: E-CONTENTS ====================
 router.post('/e-contents', async (req, res) => {
     try {
-        const { serialNo, branch, youtubeVideoCount, youtubeVideoLinks, otherEContents } = req.body;
+        const { branch, youtubeVideoCount, youtubeVideoLinks, otherEContents, month, academicYear } = req.body;
 
         const parsedYoutubeLinks = parseArrayField(youtubeVideoLinks).map((item) => String(item));
         const parsedOtherEContents = parseArrayField(otherEContents).map((item) => {
@@ -120,11 +122,12 @@ router.post('/e-contents', async (req, res) => {
         });
 
         const eContent = new EContent({
-            serialNo: Number(serialNo),
             branch,
             youtubeVideoCount: Number(youtubeVideoCount || 0),
             youtubeVideoLinks: parsedYoutubeLinks,
-            otherEContents: parsedOtherEContents
+            otherEContents: parsedOtherEContents,
+            month,
+            academicYear
         });
 
         await eContent.save();
@@ -146,16 +149,17 @@ router.get('/e-contents', async (req, res) => {
 // ==================== SECTION 3.1: GUEST LECTURES ORGANIZED ====================
 router.post('/guest-lectures', upload.single('image'), async (req, res) => {
     try {
-        const { serialNo, department, workshopTitle, date, guestName, guestDesignation } = req.body;
+        const { department, workshopTitle, date, guestName, guestDesignation, month, academicYear } = req.body;
         const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
         const lecture = new GuestLecture({
-            serialNo,
             department,
             workshopTitle,
             date,
             guestName,
             guestDesignation,
+            month,
+            academicYear,
             imagePath
         });
 
@@ -178,17 +182,18 @@ router.get('/guest-lectures', async (req, res) => {
 // ==================== SECTION 3.2: FDPs ORGANIZED ====================
 router.post('/fdps-organized', upload.single('image'), async (req, res) => {
     try {
-        const { serialNo, department, fdpTitle, date, sponsoredAgency, sponsoredAmount, numberOfBeneficiaries } = req.body;
+        const { department, fdpTitle, date, sponsoredAgency, sponsoredAmount, numberOfBeneficiaries, month, academicYear } = req.body;
         const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
         const fdp = new FDPOrganized({
-            serialNo,
             department,
             fdpTitle,
             date,
             sponsoredAgency,
             sponsoredAmount,
             numberOfBeneficiaries,
+            month,
+            academicYear,
             imagePath
         });
 
@@ -211,11 +216,10 @@ router.get('/fdps-organized', async (req, res) => {
 // ==================== SECTION 3.3: COURSE FACILITATOR SESSIONS ====================
 router.post('/course-facilitator-sessions', upload.single('image'), async (req, res) => {
     try {
-        const { serialNo, department, courseName, date, facilitatorName, facilitatorDesignation, facilitatorInstitution, numberOfStudents } = req.body;
+        const { department, courseName, date, facilitatorName, facilitatorDesignation, facilitatorInstitution, numberOfStudents, month, academicYear } = req.body;
         const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
         const session = new CourseFacilitatorSession({
-            serialNo,
             department,
             courseName,
             date,
@@ -223,6 +227,8 @@ router.post('/course-facilitator-sessions', upload.single('image'), async (req, 
             facilitatorDesignation,
             facilitatorInstitution,
             numberOfStudents,
+            month,
+            academicYear,
             imagePath
         });
 
@@ -245,11 +251,10 @@ router.get('/course-facilitator-sessions', async (req, res) => {
 // ==================== SECTION 4: FACULTY EVENTS ATTENDED ====================
 router.post('/faculty-events', upload.single('certificate'), async (req, res) => {
     try {
-        const { serialNo, facultyName, department, eventType, eventTitle, onlineOffline, organizerDetails, placeOfEvent, date } = req.body;
+        const { facultyName, department, eventType, eventTitle, onlineOffline, organizerDetails, placeOfEvent, date, month, academicYear } = req.body;
         const certificatePath = req.file ? `/uploads/${req.file.filename}` : null;
 
         const event = new FacultyEventAttended({
-            serialNo,
             facultyName,
             department,
             eventType,
@@ -258,6 +263,8 @@ router.post('/faculty-events', upload.single('certificate'), async (req, res) =>
             organizerDetails,
             placeOfEvent,
             date,
+            month,
+            academicYear,
             certificatePath
         });
 
@@ -280,10 +287,9 @@ router.get('/faculty-events', async (req, res) => {
 // ==================== SECTION 5: STUDENT EVENTS ATTENDED ====================
 router.post('/student-events', async (req, res) => {
     try {
-        const { serialNo, studentNames, department, eventType, eventTitle, onlineOffline, organizerDetails, placeOfEvent, date, numberOfStudentsAttended } = req.body;
+        const { studentNames, department, eventType, eventTitle, onlineOffline, organizerDetails, placeOfEvent, date, numberOfStudentsAttended, month, academicYear } = req.body;
 
         const event = new StudentEventAttended({
-            serialNo,
             studentNames,
             department,
             eventType,
@@ -292,7 +298,9 @@ router.post('/student-events', async (req, res) => {
             organizerDetails,
             placeOfEvent,
             date,
-            numberOfStudentsAttended
+            numberOfStudentsAttended,
+            month,
+            academicYear
         });
 
         await event.save();
@@ -314,18 +322,19 @@ router.get('/student-events', async (req, res) => {
 // ==================== SECTION 6: NPTEL/MOOC COURSES ====================
 router.post('/nptel-mooc', upload.single('certificate'), async (req, res) => {
     try {
-        const { category, serialNo, nameOfPerson, classOrDepartment, platform, courseName, duration, scoreOrCompletionDate } = req.body;
+        const { category, nameOfPerson, classOrDepartment, platform, courseName, duration, scoreOrCompletionDate, month, academicYear } = req.body;
         const certificatePath = req.file ? `/uploads/${req.file.filename}` : null;
 
         const course = new NPTELMOOCCourse({
             category,
-            serialNo,
             nameOfPerson,
             classOrDepartment,
             platform,
             courseName,
             duration,
             scoreOrCompletionDate,
+            month,
+            academicYear,
             certificatePath
         });
 
@@ -348,15 +357,15 @@ router.get('/nptel-mooc', async (req, res) => {
 // ==================== SECTION 7: ACADEMIC ACHIEVEMENTS ====================
 router.post('/academic-achievements', async (req, res) => {
     try {
-        const { serialNo, branch, semesterYear, appeared, graduated } = req.body;
+        const { branch, semesterYear, appeared, graduated, month } = req.body;
 
         const achievement = new AcademicAchievement({
-            serialNo,
             branch,
             semesterYear,
             appeared,
             graduated,
-            graduationPercentage: (graduated / appeared) * 100
+            graduationPercentage: (graduated / appeared) * 100,
+            month
         });
 
         await achievement.save();
@@ -370,6 +379,276 @@ router.get('/academic-achievements', async (req, res) => {
     try {
         const data = await AcademicAchievement.find();
         res.status(200).json(data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ==================== UPDATE & DELETE ENDPOINTS ====================
+
+// Innovative Teaching - Update
+router.put('/innovative-teaching/:id', upload.single('image'), async (req, res) => {
+    try {
+        const { department, courseCode, courseName, topic, teachingMethod, month, academicYear } = req.body;
+        const updateData = { department, courseCode, courseName, topic, teachingMethod, month, academicYear };
+        
+        if (req.file) {
+            updateData.imagePath = `/uploads/${req.file.filename}`;
+        }
+
+        const updated = await InnovativeTeaching.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        if (!updated) return res.status(404).json({ error: 'Record not found' });
+        res.json({ message: 'Updated', data: updated });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Innovative Teaching - Delete
+router.delete('/innovative-teaching/:id', async (req, res) => {
+    try {
+        const deleted = await InnovativeTeaching.findByIdAndDelete(req.params.id);
+        if (!deleted) return res.status(404).json({ error: 'Record not found' });
+        res.json({ message: 'Deleted' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// E-Content - Update
+router.put('/e-contents/:id', async (req, res) => {
+    try {
+        const { branch, youtubeVideoCount, youtubeVideoLinks, otherEContents, month, academicYear } = req.body;
+        
+        const parsedYoutubeLinks = parseArrayField(youtubeVideoLinks).map((item) => String(item));
+        const parsedOtherEContents = parseArrayField(otherEContents).map((item) => {
+            if (typeof item === 'string') {
+                return { title: item, link: '', type: 'other' };
+            }
+            return { title: item?.title || '', link: item?.link || '', type: item?.type || 'other' };
+        });
+
+        const updated = await EContent.findByIdAndUpdate(
+            req.params.id,
+            { branch, youtubeVideoCount: Number(youtubeVideoCount || 0), youtubeVideoLinks: parsedYoutubeLinks, otherEContents: parsedOtherEContents, month, academicYear },
+            { new: true }
+        );
+        if (!updated) return res.status(404).json({ error: 'Record not found' });
+        res.json({ message: 'Updated', data: updated });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// E-Content - Delete
+router.delete('/e-contents/:id', async (req, res) => {
+    try {
+        const deleted = await EContent.findByIdAndDelete(req.params.id);
+        if (!deleted) return res.status(404).json({ error: 'Record not found' });
+        res.json({ message: 'Deleted' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Guest Lecture - Update
+router.put('/guest-lectures/:id', upload.single('image'), async (req, res) => {
+    try {
+        const { department, workshopTitle, date, guestName, guestDesignation, month, academicYear } = req.body;
+        const updateData = { department, workshopTitle, date, guestName, guestDesignation, month, academicYear };
+        
+        if (req.file) {
+            updateData.imagePath = `/uploads/${req.file.filename}`;
+        }
+
+        const updated = await GuestLecture.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        if (!updated) return res.status(404).json({ error: 'Record not found' });
+        res.json({ message: 'Updated', data: updated });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Guest Lecture - Delete
+router.delete('/guest-lectures/:id', async (req, res) => {
+    try {
+        const deleted = await GuestLecture.findByIdAndDelete(req.params.id);
+        if (!deleted) return res.status(404).json({ error: 'Record not found' });
+        res.json({ message: 'Deleted' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// FDP Organized - Update
+router.put('/fdps-organized/:id', upload.single('image'), async (req, res) => {
+    try {
+        const { department, fdpTitle, date, sponsoredAgency, sponsoredAmount, numberOfBeneficiaries, month, academicYear } = req.body;
+        const updateData = { department, fdpTitle, date, sponsoredAgency, sponsoredAmount, numberOfBeneficiaries, month, academicYear };
+        
+        if (req.file) {
+            updateData.imagePath = `/uploads/${req.file.filename}`;
+        }
+
+        const updated = await FDPOrganized.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        if (!updated) return res.status(404).json({ error: 'Record not found' });
+        res.json({ message: 'Updated', data: updated });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// FDP Organized - Delete
+router.delete('/fdps-organized/:id', async (req, res) => {
+    try {
+        const deleted = await FDPOrganized.findByIdAndDelete(req.params.id);
+        if (!deleted) return res.status(404).json({ error: 'Record not found' });
+        res.json({ message: 'Deleted' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Course Facilitator - Update
+router.put('/course-facilitator-sessions/:id', upload.single('image'), async (req, res) => {
+    try {
+        const { department, courseName, date, facilitatorName, facilitatorDesignation, facilitatorInstitution, numberOfStudents, month, academicYear } = req.body;
+        const updateData = { department, courseName, date, facilitatorName, facilitatorDesignation, facilitatorInstitution, numberOfStudents, month, academicYear };
+        
+        if (req.file) {
+            updateData.imagePath = `/uploads/${req.file.filename}`;
+        }
+
+        const updated = await CourseFacilitatorSession.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        if (!updated) return res.status(404).json({ error: 'Record not found' });
+        res.json({ message: 'Updated', data: updated });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Course Facilitator - Delete
+router.delete('/course-facilitator-sessions/:id', async (req, res) => {
+    try {
+        const deleted = await CourseFacilitatorSession.findByIdAndDelete(req.params.id);
+        if (!deleted) return res.status(404).json({ error: 'Record not found' });
+        res.json({ message: 'Deleted' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Faculty Event - Update
+router.put('/faculty-events/:id', upload.single('certificate'), async (req, res) => {
+    try {
+        const { facultyName, department, eventType, eventTitle, onlineOffline, organizerDetails, placeOfEvent, date, month, academicYear } = req.body;
+        const updateData = { facultyName, department, eventType, eventTitle, onlineOffline, organizerDetails, placeOfEvent, date, month, academicYear };
+        
+        if (req.file) {
+            updateData.certificatePath = `/uploads/${req.file.filename}`;
+        }
+
+        const updated = await FacultyEventAttended.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        if (!updated) return res.status(404).json({ error: 'Record not found' });
+        res.json({ message: 'Updated', data: updated });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Faculty Event - Delete
+router.delete('/faculty-events/:id', async (req, res) => {
+    try {
+        const deleted = await FacultyEventAttended.findByIdAndDelete(req.params.id);
+        if (!deleted) return res.status(404).json({ error: 'Record not found' });
+        res.json({ message: 'Deleted' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Student Event - Update
+router.put('/student-events/:id', async (req, res) => {
+    try {
+        const { studentNames, department, eventType, eventTitle, onlineOffline, organizerDetails, placeOfEvent, date, numberOfStudentsAttended, month, academicYear } = req.body;
+        const parsedNames = parseArrayField(studentNames);
+        
+        const updated = await StudentEventAttended.findByIdAndUpdate(
+            req.params.id,
+            { studentNames: parsedNames, department, eventType, eventTitle, onlineOffline, organizerDetails, placeOfEvent, date, numberOfStudentsAttended, month, academicYear },
+            { new: true }
+        );
+        if (!updated) return res.status(404).json({ error: 'Record not found' });
+        res.json({ message: 'Updated', data: updated });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Student Event - Delete
+router.delete('/student-events/:id', async (req, res) => {
+    try {
+        const deleted = await StudentEventAttended.findByIdAndDelete(req.params.id);
+        if (!deleted) return res.status(404).json({ error: 'Record not found' });
+        res.json({ message: 'Deleted' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// NPTEL/MOOC - Update
+router.put('/nptel-mooc/:id', upload.single('certificate'), async (req, res) => {
+    try {
+        const { category, nameOfPerson, classOrDepartment, platform, courseName, duration, scoreOrCompletionDate, month, academicYear } = req.body;
+        const updateData = { category, nameOfPerson, classOrDepartment, platform, courseName, duration, scoreOrCompletionDate, month, academicYear };
+        
+        if (req.file) {
+            updateData.certificatePath = `/uploads/${req.file.filename}`;
+        }
+
+        const updated = await NPTELMOOCCourse.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        if (!updated) return res.status(404).json({ error: 'Record not found' });
+        res.json({ message: 'Updated', data: updated });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// NPTEL/MOOC - Delete
+router.delete('/nptel-mooc/:id', async (req, res) => {
+    try {
+        const deleted = await NPTELMOOCCourse.findByIdAndDelete(req.params.id);
+        if (!deleted) return res.status(404).json({ error: 'Record not found' });
+        res.json({ message: 'Deleted' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Academic Achievement - Update
+router.put('/academic-achievements/:id', async (req, res) => {
+    try {
+        const { branch, semesterYear, appeared, graduated, month } = req.body;
+        const graduationPercentage = (graduated / appeared) * 100;
+        
+        const updated = await AcademicAchievement.findByIdAndUpdate(
+            req.params.id,
+            { branch, semesterYear, appeared, graduated, graduationPercentage, month },
+            { new: true }
+        );
+        if (!updated) return res.status(404).json({ error: 'Record not found' });
+        res.json({ message: 'Updated', data: updated });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Academic Achievement - Delete
+router.delete('/academic-achievements/:id', async (req, res) => {
+    try {
+        const deleted = await AcademicAchievement.findByIdAndDelete(req.params.id);
+        if (!deleted) return res.status(404).json({ error: 'Record not found' });
+        res.json({ message: 'Deleted' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

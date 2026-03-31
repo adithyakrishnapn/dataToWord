@@ -6,14 +6,14 @@ import { useSubmit } from '../../../hooks/useSubmit';
 import { pillar1Api } from '../../../services/pillar1Api';
 
 const initialState = {
-  serialNo: '',
   branch: '',
   youtubeVideoCount: '',
   youtubeVideoLinks: '',
   otherEContents: '',
+  academicYear: '1st year',
 };
 
-export default function EContentsForm() {
+export default function EContentsForm({ month }) {
   const [form, setForm] = useState(initialState);
   const { isSubmitting, message, isError, wrapSubmit } = useSubmit();
 
@@ -25,7 +25,6 @@ export default function EContentsForm() {
     event.preventDefault();
     wrapSubmit(async () => {
       const payload = {
-        serialNo: Number(form.serialNo),
         branch: form.branch,
         youtubeVideoCount: Number(form.youtubeVideoCount || 0),
         youtubeVideoLinks: form.youtubeVideoLinks
@@ -37,6 +36,8 @@ export default function EContentsForm() {
           .map((item) => item.trim())
           .filter(Boolean)
           .map((title) => ({ title, link: '', type: 'other' })),
+        academicYear: form.academicYear,
+        month: month,
       };
       await pillar1Api.createEContents(payload);
       setForm(initialState);
@@ -45,8 +46,16 @@ export default function EContentsForm() {
 
   return (
     <form className="grid-form" onSubmit={onSubmit}>
-      <Input label="S.No" name="serialNo" type="number" value={form.serialNo} onChange={onChange} required />
       <Input label="Branch" name="branch" value={form.branch} onChange={onChange} required />
+      <label className="field">
+        <span>Academic Year</span>
+        <select name="academicYear" value={form.academicYear} onChange={onChange} required>
+          <option value="1st year">1st year</option>
+          <option value="2nd year">2nd year</option>
+          <option value="3rd year">3rd year</option>
+          <option value="final year">Final year</option>
+        </select>
+      </label>
       <Input
         label="YouTube Video Count"
         name="youtubeVideoCount"

@@ -7,16 +7,16 @@ import { pillar1Api } from '../../../services/pillar1Api';
 
 const initialState = {
   category: 'Faculty',
-  serialNo: '',
   nameOfPerson: '',
   classOrDepartment: '',
   platform: '',
   courseName: '',
   duration: '',
   scoreOrCompletionDate: '',
+  academicYear: '1st year',
 };
 
-export default function NptelMoocForm() {
+export default function NptelMoocForm({ month }) {
   const [form, setForm] = useState(initialState);
   const [certificate, setCertificate] = useState(null);
   const { isSubmitting, message, isError, wrapSubmit } = useSubmit();
@@ -26,6 +26,7 @@ export default function NptelMoocForm() {
     wrapSubmit(async () => {
       const formData = new FormData();
       Object.entries(form).forEach(([key, value]) => formData.append(key, value));
+      formData.append('month', month);
       if (certificate) formData.append('certificate', certificate);
       await pillar1Api.createNptelMooc(formData);
       setForm(initialState);
@@ -45,7 +46,15 @@ export default function NptelMoocForm() {
           <option>Student</option>
         </select>
       </label>
-      <Input label="S.No" name="serialNo" type="number" value={form.serialNo} onChange={onChange} required />
+      <label className="field">
+        <span>Academic Year</span>
+        <select name="academicYear" value={form.academicYear} onChange={onChange} required>
+          <option value="1st year">1st year</option>
+          <option value="2nd year">2nd year</option>
+          <option value="3rd year">3rd year</option>
+          <option value="final year">Final year</option>
+        </select>
+      </label>
       <Input label="Name" name="nameOfPerson" value={form.nameOfPerson} onChange={onChange} required />
       <Input label="Class / Department" name="classOrDepartment" value={form.classOrDepartment} onChange={onChange} required />
       <Input label="Platform" name="platform" value={form.platform} onChange={onChange} required />

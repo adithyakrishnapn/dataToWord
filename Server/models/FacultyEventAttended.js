@@ -3,7 +3,8 @@ import mongoose from 'mongoose';
 const facultyEventSchema = new mongoose.Schema({
     serialNo: {
         type: Number,
-        required: true
+        required: false,
+        default: null
     },
     facultyName: {
         type: String,
@@ -36,6 +37,15 @@ const facultyEventSchema = new mongoose.Schema({
     },
     date: {
         type: Date,
+        required: true
+    },
+    academicYear: {
+        type: String,
+        enum: ['1st year', '2nd year', '3rd year', 'final year'],
+        required: true
+    },
+    month: {
+        type: String,
         required: true
     },
     certificatePath: {

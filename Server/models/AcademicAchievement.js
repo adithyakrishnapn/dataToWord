@@ -3,7 +3,8 @@ import mongoose from 'mongoose';
 const academicAchievementSchema = new mongoose.Schema({
     serialNo: {
         type: Number,
-        required: true
+        required: false,
+        default: null
     },
     branch: {
         type: String,
@@ -23,6 +24,10 @@ const academicAchievementSchema = new mongoose.Schema({
     },
     graduationPercentage: {
         type: Number,
+        required: true
+    },
+    month: {
+        type: String,
         required: true
     },
     createdAt: {

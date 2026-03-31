@@ -6,7 +6,6 @@ import { useSubmit } from '../../../hooks/useSubmit';
 import { pillar1Api } from '../../../services/pillar1Api';
 
 const initialState = {
-  serialNo: '',
   facultyName: '',
   department: '',
   eventType: 'Workshop',
@@ -15,9 +14,10 @@ const initialState = {
   organizerDetails: '',
   placeOfEvent: '',
   date: '',
+  academicYear: '1st year',
 };
 
-export default function FacultyEventForm() {
+export default function FacultyEventForm({ month }) {
   const [form, setForm] = useState(initialState);
   const [certificate, setCertificate] = useState(null);
   const { isSubmitting, message, isError, wrapSubmit } = useSubmit();
@@ -27,6 +27,7 @@ export default function FacultyEventForm() {
     wrapSubmit(async () => {
       const formData = new FormData();
       Object.entries(form).forEach(([key, value]) => formData.append(key, value));
+      formData.append('month', month);
       if (certificate) formData.append('certificate', certificate);
       await pillar1Api.createFacultyEvent(formData);
       setForm(initialState);
@@ -39,9 +40,17 @@ export default function FacultyEventForm() {
 
   return (
     <form className="grid-form" onSubmit={onSubmit}>
-      <Input label="S.No" name="serialNo" type="number" value={form.serialNo} onChange={onChange} required />
       <Input label="Faculty Name" name="facultyName" value={form.facultyName} onChange={onChange} required />
       <Input label="Department" name="department" value={form.department} onChange={onChange} required />
+      <label className="field">
+        <span>Academic Year</span>
+        <select name="academicYear" value={form.academicYear} onChange={onChange} required>
+          <option value="1st year">1st year</option>
+          <option value="2nd year">2nd year</option>
+          <option value="3rd year">3rd year</option>
+          <option value="final year">Final year</option>
+        </select>
+      </label>
       <label className="field">
         <span>Event Type</span>
         <select name="eventType" value={form.eventType} onChange={onChange}>

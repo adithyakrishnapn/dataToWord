@@ -3,7 +3,8 @@ import mongoose from 'mongoose';
 const studentEventSchema = new mongoose.Schema({
     serialNo: {
         type: Number,
-        required: true
+        required: false,
+        default: null
     },
     studentNames: [{
         type: String
@@ -35,6 +36,15 @@ const studentEventSchema = new mongoose.Schema({
     },
     date: {
         type: Date,
+        required: true
+    },
+    academicYear: {
+        type: String,
+        enum: ['1st year', '2nd year', '3rd year', 'final year'],
+        required: true
+    },
+    month: {
+        type: String,
         required: true
     },
     numberOfStudentsAttended: {

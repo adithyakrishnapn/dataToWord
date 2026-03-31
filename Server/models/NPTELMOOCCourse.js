@@ -8,7 +8,8 @@ const nptelMoocSchema = new mongoose.Schema({
     },
     serialNo: {
         type: Number,
-        required: true
+        required: false,
+        default: null
     },
     nameOfPerson: {
         type: String,
@@ -30,6 +31,15 @@ const nptelMoocSchema = new mongoose.Schema({
         type: String
     },
     scoreOrCompletionDate: {
+        type: String,
+        required: true
+    },
+    academicYear: {
+        type: String,
+        enum: ['1st year', '2nd year', '3rd year', 'final year'],
+        required: true
+    },
+    month: {
         type: String,
         required: true
     },

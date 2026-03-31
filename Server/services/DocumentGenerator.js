@@ -65,6 +65,14 @@ class DocumentGenerator {
         return [...items].sort((a, b) => Number(a?.serialNo || 0) - Number(b?.serialNo || 0));
     }
 
+    static sortedByDepartment(items = []) {
+        return [...items].sort((a, b) => {
+            const deptA = (a?.department || a?.branch || a?.classOrDepartment || '').toLowerCase();
+            const deptB = (b?.department || b?.branch || b?.classOrDepartment || '').toLowerCase();
+            return deptA.localeCompare(deptB);
+        });
+    }
+
     static resolveUploadPath(storedPath) {
         if (!storedPath || typeof storedPath !== 'string') {
             return null;
@@ -218,12 +226,14 @@ class DocumentGenerator {
             return [];
         }
 
+        const sortedEvents = this.sortedByDepartment(events);
+
         return [
             this.centerTitle(heading, 22),
             this.createTable(
                 ['S.No', nameHeader, 'Departments', 'Title of the event (Online / Offline)', 'Details of the organizer with Place', 'Date'],
-                this.sorted(events).map((item, index) => [
-                    String(item?.serialNo || index + 1),
+                sortedEvents.map((item, index) => [
+                    String(index + 1),
                     item?.facultyName || item?.studentNames?.join(', ') || '',
                     item?.department || '',
                     `${item?.eventTitle || ''}${item?.onlineOffline ? ` (${item.onlineOffline})` : ''}`,
@@ -328,7 +338,7 @@ class DocumentGenerator {
         );
         blocks.push(this.sectionTitle('1. CENTER FOR LEARNING AND TEACHING'));
 
-        const innovative = this.sorted(pillar1Data.innovativeTeaching || []);
+        const innovative = this.sortedByDepartment(pillar1Data.innovativeTeaching || []);
         if (innovative.length) {
             blocks.push(this.sectionTitle('1.1 Innovative Teaching Methodologies Followed (Best one per Department)'));
             for (const item of innovative) {
@@ -345,14 +355,14 @@ class DocumentGenerator {
             addSpacer();
         }
 
-        const eContents = this.sorted(pillar1Data.eContents || []);
+        const eContents = this.sortedByDepartment(pillar1Data.eContents || []);
         if (eContents.length) {
             blocks.push(this.sectionTitle('1.2 E-Contents Developed (Faculty & Students)'));
             blocks.push(
                 this.createTable(
                     ['S.No', 'Branch', 'YouTube Lecture Videos', 'Other E Contents'],
                     eContents.map((item, index) => [
-                        String(item.serialNo || index + 1),
+                        String(index + 1),
                         item.branch || '',
                         String(item.youtubeVideoCount || 0),
                         String((item.otherEContents || []).length)
@@ -362,9 +372,9 @@ class DocumentGenerator {
             addSpacer();
         }
 
-        const guestLectures = this.sorted(pillar1Data.guestLectures || []);
-        const fdps = this.sorted(pillar1Data.fdpsOrganized || []);
-        const courseSessions = this.sorted(pillar1Data.courseFacilitatorSessions || []);
+        const guestLectures = this.sortedByDepartment(pillar1Data.guestLectures || []);
+        const fdps = this.sortedByDepartment(pillar1Data.fdpsOrganized || []);
+        const courseSessions = this.sortedByDepartment(pillar1Data.courseFacilitatorSessions || []);
         if (guestLectures.length || fdps.length || courseSessions.length) {
             blocks.push(this.sectionTitle('1.3 Workshops, Seminars, Guest Lectures, FDPs & Course Facilitator Sessions Organized'));
         }
@@ -373,7 +383,7 @@ class DocumentGenerator {
             blocks.push(this.centerTitle('Guest Lectures Organized'));
             blocks.push(this.paragraph(`Total Number of Guest Lectures Organized: ${guestLectures.length}`, { alignment: AlignmentType.CENTER, bold: true }));
             for (const item of guestLectures) {
-                blocks.push(this.paragraph(`Department : ${item.department || ''}`));
+                blocks.push(this.paragraph(`Department : ${item.department || ''}`, { bold: true }));
                 blocks.push(this.paragraph(`Guest Lecture Title : ${item.workshopTitle || ''}`));
                 blocks.push(this.paragraph(`Date : ${this.safeDate(item.date)}`));
                 blocks.push(this.paragraph(`Guest : ${`${item.guestName || ''}${item.guestDesignation ? `, ${item.guestDesignation}` : ''}`}`));
@@ -390,7 +400,7 @@ class DocumentGenerator {
             blocks.push(this.centerTitle("FDPs Organized"));
             blocks.push(this.paragraph(`Total Number of FDP's Organized: ${fdps.length}`, { alignment: AlignmentType.CENTER, bold: true }));
             for (const item of fdps) {
-                blocks.push(this.paragraph(`Department : ${item.department || ''}`));
+                blocks.push(this.paragraph(`Department : ${item.department || ''}`, { bold: true }));
                 blocks.push(this.paragraph(`FDP Title : ${item.fdpTitle || ''}`));
                 blocks.push(this.paragraph(`Date : ${this.safeDate(item.date)}`));
                 blocks.push(this.paragraph(`Sponsored Agency : ${item.sponsoredAgency || ''}`));
@@ -423,7 +433,7 @@ class DocumentGenerator {
             addSpacer();
         }
 
-        const facultyEvents = this.sorted(pillar1Data.facultyEvents || []);
+        const facultyEvents = this.sortedByDepartment(pillar1Data.facultyEvents || []);
         if (facultyEvents.length) {
             blocks.push(this.sectionTitle('1.4 Workshop, Seminar, Guest Lecture, FDP & other technical sessions attended by Faculty Members'));
             const eventTypes = ['Workshop', 'Seminar', 'Guest Lecture', 'FDP', 'Others'];
@@ -441,7 +451,7 @@ class DocumentGenerator {
             addSpacer();
         }
 
-        const studentEvents = this.sorted(pillar1Data.studentEvents || []);
+        const studentEvents = this.sortedByDepartment(pillar1Data.studentEvents || []);
         if (studentEvents.length) {
             blocks.push(this.sectionTitle('1.5 Workshop, Seminar, Guest Lecture & Course Facilitator Sessions Attended by Students'));
             const studentTypes = ['Workshop', 'Seminar', 'Guest Lecture', 'Course Facilitator Session'];
@@ -455,18 +465,19 @@ class DocumentGenerator {
             addSpacer();
         }
 
-        const nptelMooc = this.sorted(pillar1Data.nptelMooc || []);
+        const nptelMooc = this.sortedByDepartment(pillar1Data.nptelMooc || []);
         if (nptelMooc.length) {
             blocks.push(this.sectionTitle('1.6 NPTEL & MOOC Courses (Faculty & Students)'));
             const faculty = nptelMooc.filter((item) => item.category === 'Faculty');
             const students = nptelMooc.filter((item) => item.category === 'Student');
 
             if (faculty.length) {
+                const faculty_sorted = this.sortedByDepartment(faculty);
                 blocks.push(this.centerTitle('NPTEL/MOOC Courses (Faculty Members)', 22));
                 blocks.push(
                     this.createTable(
                         ['S.No', 'Department', 'Number of courses completed'],
-                        faculty.map((item, index) => [String(index + 1), item.classOrDepartment || '', '1']),
+                        faculty_sorted.map((item, index) => [String(index + 1), item.classOrDepartment || '', '1']),
                         { centerBody: true }
                     )
                 );
@@ -475,8 +486,8 @@ class DocumentGenerator {
                 blocks.push(
                     this.createTable(
                         ['S.No', 'Departments', 'Name of the faculty members', 'Platform', 'Course Name', 'Duration', 'Score/Completed on'],
-                        faculty.map((item, index) => [
-                            String(item.serialNo || index + 1),
+                        faculty_sorted.map((item, index) => [
+                            String(index + 1),
                             item.classOrDepartment || '',
                             item.nameOfPerson || '',
                             item.platform || '',
@@ -490,11 +501,12 @@ class DocumentGenerator {
             }
 
             if (students.length) {
+                const students_sorted = this.sortedByDepartment(students);
                 blocks.push(this.centerTitle('NPTEL/MOOC Courses (Students)', 22));
                 blocks.push(
                     this.createTable(
                         ['S.No', 'Department', 'Number of courses completed'],
-                        students.map((item, index) => [String(index + 1), item.classOrDepartment || '', '1']),
+                        students_sorted.map((item, index) => [String(index + 1), item.classOrDepartment || '', '1']),
                         { centerBody: true }
                     )
                 );
@@ -503,8 +515,8 @@ class DocumentGenerator {
                 blocks.push(
                     this.createTable(
                         ['S.No', 'Class', 'Name of the Student members', 'Platform', 'Course Name', 'Duration', 'Score/Completed on'],
-                        students.map((item, index) => [
-                            String(item.serialNo || index + 1),
+                        students_sorted.map((item, index) => [
+                            String(index + 1),
                             item.classOrDepartment || '',
                             item.nameOfPerson || '',
                             item.platform || '',
@@ -520,7 +532,7 @@ class DocumentGenerator {
             addSpacer();
         }
 
-        const achievements = this.sorted(pillar1Data.academicAchievements || []);
+        const achievements = this.sortedByDepartment(pillar1Data.academicAchievements || []);
         if (achievements.length) {
             blocks.push(this.sectionTitle('1.7 Academic Achievements'));
             blocks.push(
@@ -536,7 +548,7 @@ class DocumentGenerator {
                         const appeared = Number(item.appeared || 0);
                         const graduated = Number(item.graduated || 0);
                         const pct = appeared > 0 ? ((graduated / appeared) * 100).toFixed(2) : '0.00';
-                        return [String(item.serialNo || index + 1), item.branch || '', String(appeared), String(graduated), pct];
+                        return [String(index + 1), item.branch || '', String(appeared), String(graduated), pct];
                     })
                 )
             );

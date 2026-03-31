@@ -3,7 +3,8 @@ import mongoose from 'mongoose';
 const fdpOrganizedSchema = new mongoose.Schema({
     serialNo: {
         type: Number,
-        required: true
+        required: false,
+        default: null
     },
     department: {
         type: String,
@@ -26,6 +27,15 @@ const fdpOrganizedSchema = new mongoose.Schema({
     },
     numberOfBeneficiaries: {
         type: Number,
+        required: true
+    },
+    academicYear: {
+        type: String,
+        enum: ['1st year', '2nd year', '3rd year', 'final year'],
+        required: true
+    },
+    month: {
+        type: String,
         required: true
     },
     imagePath: {

@@ -6,7 +6,6 @@ import { useSubmit } from '../../../hooks/useSubmit';
 import { pillar1Api } from '../../../services/pillar1Api';
 
 const initialState = {
-  serialNo: '',
   department: '',
   courseName: '',
   date: '',
@@ -14,9 +13,10 @@ const initialState = {
   facilitatorDesignation: '',
   facilitatorInstitution: '',
   numberOfStudents: '',
+  academicYear: '1st year',
 };
 
-export default function CourseFacilitatorForm() {
+export default function CourseFacilitatorForm({ month }) {
   const [form, setForm] = useState(initialState);
   const [image, setImage] = useState(null);
   const { isSubmitting, message, isError, wrapSubmit } = useSubmit();
@@ -26,6 +26,7 @@ export default function CourseFacilitatorForm() {
     wrapSubmit(async () => {
       const formData = new FormData();
       Object.entries(form).forEach(([key, value]) => formData.append(key, value));
+      formData.append('month', month);
       if (image) formData.append('image', image);
       await pillar1Api.createCourseFacilitatorSession(formData);
       setForm(initialState);
@@ -38,8 +39,16 @@ export default function CourseFacilitatorForm() {
 
   return (
     <form className="grid-form" onSubmit={onSubmit}>
-      <Input label="S.No" name="serialNo" type="number" value={form.serialNo} onChange={onChange} required />
       <Input label="Department" name="department" value={form.department} onChange={onChange} required />
+      <label className="field">
+        <span>Academic Year</span>
+        <select name="academicYear" value={form.academicYear} onChange={onChange} required>
+          <option value="1st year">1st year</option>
+          <option value="2nd year">2nd year</option>
+          <option value="3rd year">3rd year</option>
+          <option value="final year">Final year</option>
+        </select>
+      </label>
       <Input label="Course Name" name="courseName" value={form.courseName} onChange={onChange} required />
       <Input label="Date" name="date" type="date" value={form.date} onChange={onChange} required />
       <Input label="Facilitator Name" name="facilitatorName" value={form.facilitatorName} onChange={onChange} required />

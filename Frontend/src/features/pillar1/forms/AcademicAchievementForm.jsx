@@ -6,14 +6,13 @@ import { useSubmit } from '../../../hooks/useSubmit';
 import { pillar1Api } from '../../../services/pillar1Api';
 
 const initialState = {
-  serialNo: '',
   branch: '',
   semesterYear: '',
   appeared: '',
   graduated: '',
 };
 
-export default function AcademicAchievementForm() {
+export default function AcademicAchievementForm({ month }) {
   const [form, setForm] = useState(initialState);
   const { isSubmitting, message, isError, wrapSubmit } = useSubmit();
 
@@ -22,9 +21,9 @@ export default function AcademicAchievementForm() {
     wrapSubmit(async () => {
       const payload = {
         ...form,
-        serialNo: Number(form.serialNo),
         appeared: Number(form.appeared),
         graduated: Number(form.graduated),
+        month: month,
       };
       await pillar1Api.createAcademicAchievement(payload);
       setForm(initialState);
@@ -35,7 +34,6 @@ export default function AcademicAchievementForm() {
 
   return (
     <form className="grid-form" onSubmit={onSubmit}>
-      <Input label="S.No" name="serialNo" type="number" value={form.serialNo} onChange={onChange} required />
       <Input label="Branch" name="branch" value={form.branch} onChange={onChange} required />
       <Input label="Semester / Year" name="semesterYear" value={form.semesterYear} onChange={onChange} required />
       <Input label="Appeared" name="appeared" type="number" value={form.appeared} onChange={onChange} required />

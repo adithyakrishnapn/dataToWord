@@ -12,7 +12,8 @@ const otherEContentItemSchema = new mongoose.Schema(
 const eContentSchema = new mongoose.Schema({
     serialNo: {
         type: Number,
-        required: true
+        required: false,
+        default: null
     },
     branch: {
         type: String,
@@ -29,6 +30,15 @@ const eContentSchema = new mongoose.Schema({
     otherEContents: {
         type: [otherEContentItemSchema],
         default: []
+    },
+    academicYear: {
+        type: String,
+        enum: ['1st year', '2nd year', '3rd year', 'final year'],
+        required: true
+    },
+    month: {
+        type: String,
+        required: true
     },
     createdAt: {
         type: Date,

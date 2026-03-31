@@ -6,7 +6,6 @@ import { useSubmit } from '../../../hooks/useSubmit';
 import { pillar1Api } from '../../../services/pillar1Api';
 
 const initialState = {
-  serialNo: '',
   studentNames: '',
   department: '',
   eventType: 'Workshop',
@@ -16,9 +15,10 @@ const initialState = {
   placeOfEvent: '',
   date: '',
   numberOfStudentsAttended: '',
+  academicYear: '1st year',
 };
 
-export default function StudentEventForm() {
+export default function StudentEventForm({ month }) {
   const [form, setForm] = useState(initialState);
   const { isSubmitting, message, isError, wrapSubmit } = useSubmit();
 
@@ -27,9 +27,9 @@ export default function StudentEventForm() {
     wrapSubmit(async () => {
       const payload = {
         ...form,
-        serialNo: Number(form.serialNo),
         numberOfStudentsAttended: Number(form.numberOfStudentsAttended),
         studentNames: form.studentNames.split(',').map((name) => name.trim()).filter(Boolean),
+        month: month,
       };
       await pillar1Api.createStudentEvent(payload);
       setForm(initialState);
@@ -40,9 +40,17 @@ export default function StudentEventForm() {
 
   return (
     <form className="grid-form" onSubmit={onSubmit}>
-      <Input label="S.No" name="serialNo" type="number" value={form.serialNo} onChange={onChange} required />
       <Input label="Student Names (comma separated)" name="studentNames" value={form.studentNames} onChange={onChange} required />
       <Input label="Department" name="department" value={form.department} onChange={onChange} required />
+      <label className="field">
+        <span>Academic Year</span>
+        <select name="academicYear" value={form.academicYear} onChange={onChange} required>
+          <option value="1st year">1st year</option>
+          <option value="2nd year">2nd year</option>
+          <option value="3rd year">3rd year</option>
+          <option value="final year">Final year</option>
+        </select>
+      </label>
       <label className="field">
         <span>Event Type</span>
         <select name="eventType" value={form.eventType} onChange={onChange}>
