@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import sharp from 'sharp';
 import {
     AlignmentType,
     BorderStyle,
@@ -69,6 +70,13 @@ class DocumentGenerator {
             return null;
         }
 
+        // Paths from DB are stored as '/uploads/<file>'. On Windows this is treated as
+        // an absolute root path (e.g. D:\uploads\...), so map it back to /public/uploads.
+        if (storedPath.startsWith('/uploads/') || storedPath.startsWith('\\uploads\\')) {
+            const normalizedUploadPath = storedPath.replace(/^[/\\]+/, '');
+            return path.join(__dirname, '..', 'public', normalizedUploadPath);
+        }
+
         if (path.isAbsolute(storedPath)) {
             return storedPath;
         }
@@ -84,13 +92,29 @@ class DocumentGenerator {
                 return null;
             }
 
-            const imageBuffer = await fs.readFile(absolutePath);
+            let imageBuffer = await fs.readFile(absolutePath);
+            const ext = path.extname(absolutePath).toLowerCase();
+
+            let imageType = 'png';
+            if (ext === '.jpg' || ext === '.jpeg' || ext === '.jfif') {
+                imageType = 'jpg';
+            } else if (ext === '.png') {
+                imageType = 'png';
+            } else if (ext === '.bmp') {
+                imageType = 'bmp';
+            } else if (ext === '.gif' || ext === '.webp') {
+                // Convert formats with poor DOCX compatibility into PNG.
+                imageBuffer = await sharp(imageBuffer).png().toBuffer();
+                imageType = 'png';
+            }
+
             return new Paragraph({
                 alignment: AlignmentType.CENTER,
                 spacing: { before: 120, after: 140 },
                 children: [
                     new ImageRun({
                         data: imageBuffer,
+                        type: imageType,
                         transformation: { width, height }
                     })
                 ]

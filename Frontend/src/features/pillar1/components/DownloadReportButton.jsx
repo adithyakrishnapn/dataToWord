@@ -12,7 +12,8 @@ export default function DownloadReportButton() {
       setError('');
       setLoading(true);
       const response = await pillar1Api.downloadReport();
-      downloadBlob(response.data, 'Annual_Report_Learning_Teaching.docx');
+      const reportFileName = response.headers?.['x-report-filename'] || 'Annual_Report_Learning_Teaching.docx';
+      downloadBlob(response.data, reportFileName);
     } catch (err) {
       setError(err?.response?.data?.error || 'Failed to download report.');
     } finally {

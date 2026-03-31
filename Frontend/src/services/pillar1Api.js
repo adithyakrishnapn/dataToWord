@@ -33,4 +33,10 @@ export const pillar1Api = {
     httpClient.post(`${PILLAR_BASE}/academic-achievements`, payload),
   downloadReport: () =>
     httpClient.get(`${PILLAR_BASE}/generate-report`, { responseType: 'blob' }),
+  listReportHistory: () =>
+    httpClient.get(`${PILLAR_BASE}/report-history`),
+  downloadReportByName: (fileName) =>
+    httpClient.get(`${PILLAR_BASE}/report-history/${encodeURIComponent(fileName)}/download`, { responseType: 'blob' }),
+  downloadAllReports: () =>
+    httpClient.get(`${PILLAR_BASE}/report-history/download-all`, { responseType: 'blob' }),
 };

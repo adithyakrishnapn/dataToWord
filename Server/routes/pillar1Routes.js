@@ -1,4 +1,8 @@
 import express from 'express';
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import JSZip from 'jszip';
 import upload from '../config/multerConfig.js';
 import InnovativeTeaching from '../models/InnovativeTeachingMethodology.js';
 import EContent from '../models/EContent.js';
@@ -12,6 +16,37 @@ import AcademicAchievement from '../models/AcademicAchievement.js';
 import DocumentGenerator from '../services/DocumentGenerator.js';
 
 const router = express.Router();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const reportsDir = path.join(__dirname, '..', 'public', 'reports');
+
+async function ensureReportsDir() {
+    await fs.mkdir(reportsDir, { recursive: true });
+}
+
+function buildReportFileName() {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const hh = String(now.getHours()).padStart(2, '0');
+    const min = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    return `Annual_Report_Learning_Teaching_${yyyy}${mm}${dd}_${hh}${min}${ss}.docx`;
+}
+
+function sanitizeReportFileName(rawName = '') {
+    const safeName = path.basename(String(rawName));
+    if (!safeName.toLowerCase().endsWith('.docx')) {
+        return null;
+    }
+
+    if (!/^[a-zA-Z0-9._-]+\.docx$/.test(safeName)) {
+        return null;
+    }
+
+    return safeName;
+}
 
 function parseArrayField(value) {
     if (Array.isArray(value)) {
@@ -379,13 +414,95 @@ router.get('/generate-report', async (req, res) => {
         };
 
         const docBuffer = await DocumentGenerator.generateDocument(pillar1Data);
+        await ensureReportsDir();
+        const generatedFileName = buildReportFileName();
+        const outputPath = path.join(reportsDir, generatedFileName);
+        await fs.writeFile(outputPath, docBuffer);
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-        res.setHeader('Content-Disposition', 'attachment; filename="Annual_Report_Learning_Teaching.docx"');
+        res.setHeader('Content-Disposition', `attachment; filename="${generatedFileName}"`);
+        res.setHeader('X-Report-Filename', generatedFileName);
         res.send(docBuffer);
     } catch (error) {
         console.error('Error generating report:', error);
         res.status(500).json({ error: error.message });
+    }
+});
+
+router.get('/report-history', async (req, res) => {
+    try {
+        await ensureReportsDir();
+        const entries = await fs.readdir(reportsDir, { withFileTypes: true });
+        const docxFiles = entries
+            .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith('.docx'))
+            .map((entry) => entry.name);
+
+        const history = await Promise.all(
+            docxFiles.map(async (fileName) => {
+                const fullPath = path.join(reportsDir, fileName);
+                const stats = await fs.stat(fullPath);
+                return {
+                    fileName,
+                    sizeBytes: stats.size,
+                    createdAt: stats.birthtime,
+                    updatedAt: stats.mtime
+                };
+            })
+        );
+
+        history.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        res.status(200).json(history);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.get('/report-history/download-all', async (req, res) => {
+    try {
+        await ensureReportsDir();
+        const entries = await fs.readdir(reportsDir, { withFileTypes: true });
+        const docxFiles = entries
+            .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith('.docx'))
+            .map((entry) => entry.name)
+            .sort();
+
+        if (!docxFiles.length) {
+            return res.status(404).json({ error: 'No generated reports found.' });
+        }
+
+        const zip = new JSZip();
+        for (const fileName of docxFiles) {
+            const fullPath = path.join(reportsDir, fileName);
+            const fileBuffer = await fs.readFile(fullPath);
+            zip.file(fileName, fileBuffer);
+        }
+
+        const zipBuffer = await zip.generateAsync({ type: 'nodebuffer' });
+        const zipName = `Generated_Reports_${new Date().toISOString().slice(0, 10)}.zip`;
+
+        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader('Content-Disposition', `attachment; filename="${zipName}"`);
+        res.send(zipBuffer);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.get('/report-history/:fileName/download', async (req, res) => {
+    try {
+        const decodedFileName = decodeURIComponent(req.params.fileName || '');
+        const safeFileName = sanitizeReportFileName(decodedFileName);
+        if (!safeFileName) {
+            return res.status(400).json({ error: 'Invalid report file name.' });
+        }
+
+        await ensureReportsDir();
+        const reportPath = path.join(reportsDir, safeFileName);
+        await fs.access(reportPath);
+
+        res.download(reportPath, safeFileName);
+    } catch {
+        res.status(404).json({ error: 'Report file not found.' });
     }
 });
 

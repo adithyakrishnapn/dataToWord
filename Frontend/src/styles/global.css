@@ -63,6 +63,30 @@ body {
   max-width: 68ch;
 }
 
+.hero-tabs {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.hero-tab {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f6f2e8;
+  border-radius: 999px;
+  padding: 0.45rem 0.95rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hero-tab-active {
+  background: #ffcb85;
+  color: #2f3f54;
+  border-color: #ffcb85;
+}
+
 .download-box,
 .section-card {
   background: var(--paper);
@@ -164,6 +188,54 @@ body {
   color: var(--error);
 }
 
+.history-panel {
+  margin-top: 1rem;
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.history-header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.history-actions {
+  display: flex;
+  gap: 0.55rem;
+}
+
+.history-empty {
+  margin: 0.25rem 0 0;
+  color: var(--ink-soft);
+}
+
+.history-table-wrap {
+  overflow-x: auto;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.history-table th,
+.history-table td {
+  border: 1px solid var(--line);
+  padding: 0.6rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.history-table th {
+  background: #f2ebe0;
+}
+
 @keyframes rise-in {
   from {
     opacity: 0;
@@ -192,5 +264,14 @@ body {
 
   .grid-form {
     grid-template-columns: 1fr;
+  }
+
+  .history-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .history-actions {
+    justify-content: stretch;
   }
 }

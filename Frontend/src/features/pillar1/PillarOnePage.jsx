@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import SectionCard from './components/SectionCard';
 import DownloadReportButton from './components/DownloadReportButton';
+import ReportHistoryPanel from './components/ReportHistoryPanel';
 import InnovativeTeachingForm from './forms/InnovativeTeachingForm';
 import EContentsForm from './forms/EContentsForm';
 import GuestLectureForm from './forms/GuestLectureForm';
@@ -11,6 +13,8 @@ import NptelMoocForm from './forms/NptelMoocForm';
 import AcademicAchievementForm from './forms/AcademicAchievementForm';
 
 export default function PillarOnePage() {
+  const [activeTab, setActiveTab] = useState('entry');
+
   return (
     <main className="page-wrap">
       <header className="hero-panel">
@@ -20,45 +24,72 @@ export default function PillarOnePage() {
           Industrial workflow for pillar data entry and one-click annual report generation.
           All forms below map directly to your backend APIs.
         </p>
+
+        <div className="hero-tabs" role="tablist" aria-label="Report sections">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'entry'}
+            className={`hero-tab ${activeTab === 'entry' ? 'hero-tab-active' : ''}`}
+            onClick={() => setActiveTab('entry')}
+          >
+            Data Entry
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'history'}
+            className={`hero-tab ${activeTab === 'history' ? 'hero-tab-active' : ''}`}
+            onClick={() => setActiveTab('history')}
+          >
+            History
+          </button>
+        </div>
       </header>
 
-      <DownloadReportButton />
+      {activeTab === 'entry' ? (
+        <>
+          <DownloadReportButton />
 
-      <SectionCard title="1. Innovative Teaching Methodologies" description="Best one per department.">
-        <InnovativeTeachingForm />
-      </SectionCard>
+          <SectionCard title="1. Innovative Teaching Methodologies" description="Best one per department.">
+            <InnovativeTeachingForm />
+          </SectionCard>
 
-      <SectionCard title="2. E-Contents Developed" description="Faculty and students content records.">
-        <EContentsForm />
-      </SectionCard>
+          <SectionCard title="2. E-Contents Developed" description="Faculty and students content records.">
+            <EContentsForm />
+          </SectionCard>
 
-      <SectionCard title="3.1 Guest Lectures Organized" description="Workshops, seminars and guest lecture events.">
-        <GuestLectureForm />
-      </SectionCard>
+          <SectionCard title="3.1 Guest Lectures Organized" description="Workshops, seminars and guest lecture events.">
+            <GuestLectureForm />
+          </SectionCard>
 
-      <SectionCard title="3.2 FDPs Organized" description="Sponsored FDP programs and beneficiary counts.">
-        <FdpOrganizedForm />
-      </SectionCard>
+          <SectionCard title="3.2 FDPs Organized" description="Sponsored FDP programs and beneficiary counts.">
+            <FdpOrganizedForm />
+          </SectionCard>
 
-      <SectionCard title="3.3 Course Facilitator Sessions" description="Course facilitator sessions organized.">
-        <CourseFacilitatorForm />
-      </SectionCard>
+          <SectionCard title="3.3 Course Facilitator Sessions" description="Course facilitator sessions organized.">
+            <CourseFacilitatorForm />
+          </SectionCard>
 
-      <SectionCard title="4. Events Attended by Faculty" description="Workshop, seminar, guest lecture, FDP, others.">
-        <FacultyEventForm />
-      </SectionCard>
+          <SectionCard title="4. Events Attended by Faculty" description="Workshop, seminar, guest lecture, FDP, others.">
+            <FacultyEventForm />
+          </SectionCard>
 
-      <SectionCard title="5. Events Attended by Students" description="Workshop, seminar, guest lecture, and facilitator sessions.">
-        <StudentEventForm />
-      </SectionCard>
+          <SectionCard title="5. Events Attended by Students" description="Workshop, seminar, guest lecture, and facilitator sessions.">
+            <StudentEventForm />
+          </SectionCard>
 
-      <SectionCard title="6. NPTEL & MOOC Courses" description="Faculty and students course completion records.">
-        <NptelMoocForm />
-      </SectionCard>
+          <SectionCard title="6. NPTEL & MOOC Courses" description="Faculty and students course completion records.">
+            <NptelMoocForm />
+          </SectionCard>
 
-      <SectionCard title="7. Academic Achievements" description="Appeared, graduated and graduation percentage data.">
-        <AcademicAchievementForm />
-      </SectionCard>
+          <SectionCard title="7. Academic Achievements" description="Appeared, graduated and graduation percentage data.">
+            <AcademicAchievementForm />
+          </SectionCard>
+        </>
+      ) : (
+        <ReportHistoryPanel />
+      )}
     </main>
   );
 }
