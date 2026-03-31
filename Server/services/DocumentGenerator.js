@@ -24,6 +24,173 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 class DocumentGenerator {
+    static genericSectionRenderConfig = {
+        // Pillar 2
+        cfe: { mode: 'text' },
+        'papers-published-scopus-wos-scie-faculty': { mode: 'text', totalLabel: 'Total Number of Papers Published' },
+        'papers-presented-faculty': { mode: 'text' },
+        'papers-published-students': { mode: 'text' },
+        'papers-presented-students': { mode: 'text' },
+        'symposium-papers-students': { mode: 'text' },
+        'books-book-chapters': { mode: 'text' },
+        patents: {
+            mode: 'table',
+            headers: ['S.No', 'Application Number', 'Date of Grant/Published/Filed', 'Name of the faculty members', 'Title of the Patent', 'Filed/Published/Granted', 'Design/Product'],
+            row: (item, index) => [
+                String(index + 1),
+                item?.data?.applicationNumber || '',
+                this.safeDate(item?.data?.date),
+                item?.data?.facultyMembers || '',
+                item?.data?.patentTitle || '',
+                item?.data?.filingStatus || '',
+                item?.data?.designOrProduct || ''
+            ]
+        },
+        'grants-received': {
+            mode: 'table',
+            headers: ['S.No', 'Departments', 'Description', 'Granting Agency', 'Grant Amount Received Rs'],
+            row: (item, index) => [
+                String(index + 1),
+                item?.data?.department || item?.department || '',
+                item?.data?.description || '',
+                item?.data?.grantingAgency || '',
+                String(item?.data?.amountReceived || '')
+            ]
+        },
+        consultancy: {
+            mode: 'table',
+            headers: ['S.No', 'Department', 'Consultancy to', 'Revenue Generated (Rs)', 'Status'],
+            row: (item, index) => [
+                String(index + 1),
+                item?.data?.department || item?.department || '',
+                item?.data?.consultancyTo || '',
+                String(item?.data?.revenueGenerated || ''),
+                item?.data?.status || ''
+            ]
+        },
+        startups: {
+            mode: 'table',
+            headers: ['S.No', 'Departments', 'Name of the startup', 'Month & Year of Starting', 'Amount Generated Rs'],
+            row: (item, index) => [
+                String(index + 1),
+                item?.data?.department || item?.department || '',
+                item?.data?.startupName || '',
+                item?.data?.monthYearStarted || '',
+                String(item?.data?.amountGenerated || '')
+            ]
+        },
+        'hackathon-ideathon-organized': { mode: 'text' },
+        'bmc-videos': {
+            mode: 'table',
+            headers: ['S.No', 'Branch', 'No. of BMC videos Taken'],
+            row: (item, index) => [
+                String(index + 1),
+                item?.data?.branch || item?.department || '',
+                String(item?.data?.bmcVideosTaken || '')
+            ]
+        },
+
+        // Pillar 3
+        'student-participation': {
+            mode: 'table',
+            headers: ['S.No', 'Departments', 'Type of events', 'Number of students'],
+            row: (item, index) => [
+                String(index + 1),
+                item?.data?.department || item?.department || '',
+                item?.data?.eventType || '',
+                String(item?.data?.studentsCount || '')
+            ]
+        },
+        'student-achievements': {
+            mode: 'table',
+            headers: ['S.No', 'Class', 'Name of the Students', 'Date of the Event', 'Name of the event', 'Organized by', 'Place'],
+            row: (item, index) => [
+                String(index + 1),
+                item?.data?.className || '',
+                item?.data?.studentNames || '',
+                this.safeDate(item?.data?.date),
+                item?.data?.eventName || '',
+                item?.data?.organizedBy || '',
+                item?.data?.place || ''
+            ]
+        },
+        'iste-activities': { mode: 'text', totalLabel: 'Total Number of Activity Organized' },
+        'iete-activities': { mode: 'text', totalLabel: 'Total Number of IETE Activity Organized' },
+        'club-activities': { mode: 'text', totalLabel: 'Total Number of Club Activity Organized' },
+        'iste-iete-club-activities': { mode: 'text', totalLabel: 'Total Number of Activity Organized' },
+        'global-certifications': {
+            mode: 'table',
+            headers: ['S.No', 'Class', 'Name of Certification', 'No. of Students Completed'],
+            row: (item, index) => [
+                String(index + 1),
+                item?.data?.className || '',
+                item?.data?.certificationName || '',
+                String(item?.data?.studentsCompleted || '')
+            ]
+        },
+
+        // Pillar 4
+        'mou-signed': { mode: 'text', totalLabel: 'MoUs Signed This Year' },
+        'industry-collaborated-activities': {
+            mode: 'table',
+            headers: ['Sl.No', 'Type of events', 'Student Count'],
+            row: (item, index) => [
+                String(index + 1),
+                item?.data?.activityType || '',
+                String(item?.data?.studentCount || '')
+            ]
+        },
+        'internship-details': {
+            mode: 'table',
+            headers: ['S.No', 'Departments', 'Name of the Students', 'Name of the Industry', 'Internship Category (Paid / Unpaid)', 'Amount Received'],
+            row: (item, index) => [
+                String(index + 1),
+                item?.data?.department || item?.department || '',
+                item?.data?.studentName || '',
+                item?.data?.industryName || '',
+                item?.data?.internshipCategory || '',
+                String(item?.data?.amountReceived || '')
+            ]
+        },
+        'industrial-visits': { mode: 'text', totalLabel: 'Total Number of Industry Visits' },
+        'industrial-projects': {
+            mode: 'table',
+            headers: ['S.No', 'Class', 'Name of the Students', 'Name of the Industry with Address', 'Title of the Project'],
+            row: (item, index) => [
+                String(index + 1),
+                item?.data?.className || '',
+                item?.data?.studentName || '',
+                item?.data?.industryName || '',
+                item?.data?.projectTitle || ''
+            ]
+        },
+
+        // Pillar 5
+        'extension-activities': { mode: 'text' },
+        'dt-bootcamps': { mode: 'text' }
+    };
+
+    static pillarSectionOrder = {
+        2: [
+            'cfe',
+            'papers-published-scopus-wos-scie-faculty',
+            'papers-presented-faculty',
+            'papers-published-students',
+            'papers-presented-students',
+            'symposium-papers-students',
+            'books-book-chapters',
+            'patents',
+            'grants-received',
+            'consultancy',
+            'startups',
+            'hackathon-ideathon-organized',
+            'bmc-videos'
+        ],
+        3: ['student-participation', 'student-achievements', 'iste-activities', 'iete-activities', 'club-activities', 'iste-iete-club-activities', 'global-certifications'],
+        4: ['mou-signed', 'industry-collaborated-activities', 'internship-details', 'industrial-visits', 'industrial-projects'],
+        5: ['extension-activities', 'dt-bootcamps']
+    };
+
     static textRun(text, options = {}) {
         return new TextRun({
             text: String(text ?? ''),
@@ -151,6 +318,144 @@ class DocumentGenerator {
         });
     }
 
+    static prettyLabel(key) {
+        return String(key || '')
+            .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+            .replace(/[_-]+/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .replace(/^./, (ch) => ch.toUpperCase());
+    }
+
+    static stringifyData(data = {}) {
+        const pairs = Object.entries(data)
+            .map(([key, value]) => {
+                if (value === null || value === undefined || String(value).trim() === '') {
+                    return null;
+                }
+                const normalized = Array.isArray(value) ? value.join(', ') : String(value);
+                return `${this.prettyLabel(key)}: ${normalized}`;
+            })
+            .filter(Boolean);
+
+        return pairs.join(' | ');
+    }
+
+    static async renderTextRecord(record, options = {}) {
+        const lines = [];
+        const entries = Object.entries(record?.data || {});
+        const alignment = options.alignment || AlignmentType.LEFT;
+
+        for (const [key, value] of entries) {
+            if (value === null || value === undefined || String(value).trim() === '') {
+                continue;
+            }
+            const formatted = key.toLowerCase().includes('date') ? this.safeDate(value) : String(value);
+            lines.push(this.paragraph(`${this.prettyLabel(key)} : ${formatted}`, { alignment }));
+        }
+
+        if (record?.month || record?.academicYear) {
+            lines.push(this.paragraph(`Month : ${record.month || ''}   Academic Year : ${record.academicYear || ''}`, { alignment }));
+        }
+
+        if (options.includeImage && record?.imagePath) {
+            const imageBlock = await this.imageParagraph(record.imagePath, 220, 120);
+            if (imageBlock) {
+                lines.push(imageBlock);
+            }
+        }
+
+        lines.push(this.paragraph('', { alignment, spacing: { after: 120 } }));
+        return lines;
+    }
+
+    static pillarTitlePage(title) {
+        return [
+            new Paragraph({
+                pageBreakBefore: true,
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 6200, after: 5200 },
+                children: [this.textRun(title, { bold: true, underline: true, size: 40 })]
+            }),
+            new Paragraph({ pageBreakBefore: true, children: [] })
+        ];
+    }
+
+    static async appendGenericPillar(blocks, pillarNumber, pillarTitle, records = []) {
+        if (!records.length) {
+            return;
+        }
+
+        blocks.push(...this.pillarTitlePage(`${pillarNumber}. ${pillarTitle}`));
+
+        const grouped = records.reduce((acc, record) => {
+            const key = record.sectionKey || 'misc';
+            if (!acc[key]) {
+                acc[key] = [];
+            }
+            acc[key].push(record);
+            return acc;
+        }, {});
+
+        const orderedKeys = this.pillarSectionOrder[pillarNumber] || Object.keys(grouped);
+
+        for (const sectionKey of orderedKeys) {
+            const sectionRecords = grouped[sectionKey] || [];
+            if (!sectionRecords.length) {
+                continue;
+            }
+
+            const sectionTitle = sectionRecords[0]?.sectionTitle || sectionKey;
+            const sortedRecords = this.sortedByDepartment(sectionRecords);
+            blocks.push(this.sectionTitle(sectionTitle));
+
+            const sectionConfig = this.genericSectionRenderConfig[sectionKey] || { mode: 'text' };
+
+            if (sectionKey === 'hackathon-ideathon-organized') {
+                const hackathons = sortedRecords.filter((row) => String(row?.data?.eventType || '').toLowerCase().includes('hack'));
+                const ideathons = sortedRecords.filter((row) => String(row?.data?.eventType || '').toLowerCase().includes('idea'));
+                blocks.push(this.paragraph(`Total Number of Hackathons Organized: ${hackathons.length}`, { bold: true }));
+                blocks.push(this.paragraph(`Total Number of Ideathons Organized: ${ideathons.length}`, { bold: true, spacing: { after: 100 } }));
+            } else if (sectionConfig.totalLabel) {
+                blocks.push(this.paragraph(`${sectionConfig.totalLabel}: ${sortedRecords.length}`, { bold: true, spacing: { after: 100 } }));
+            } else {
+                blocks.push(this.paragraph(`Total Number of Records: ${sortedRecords.length}`, { bold: true, spacing: { after: 100 } }));
+            }
+
+            if (sectionConfig.mode === 'table') {
+                blocks.push(
+                    this.createTable(
+                        sectionConfig.headers || ['S.No', 'Details'],
+                        sortedRecords.map((item, index) => {
+                            if (typeof sectionConfig.row === 'function') {
+                                return sectionConfig.row(item, index);
+                            }
+                            return [String(index + 1), this.stringifyData(item.data)];
+                        })
+                    )
+                );
+                blocks.push(this.paragraph('', { spacing: { after: 180 } }));
+                continue;
+            }
+
+            for (const item of sortedRecords) {
+                blocks.push(...await this.renderTextRecord(item, {
+                    includeImage: sectionKey === 'cfe'
+                        || sectionKey === 'papers-published-scopus-wos-scie-faculty'
+                        || sectionKey === 'hackathon-ideathon-organized'
+                        || sectionKey === 'iste-activities'
+                        || sectionKey === 'iete-activities'
+                        || sectionKey === 'club-activities'
+                        || sectionKey === 'iste-iete-club-activities'
+                        || sectionKey === 'mou-signed'
+                        || sectionKey === 'industrial-visits'
+                        || sectionKey === 'extension-activities'
+                        || sectionKey === 'dt-bootcamps'
+                }));
+            }
+        }
+    }
+
     static createTable(headers, rows, options = {}) {
         const headerStyle = {
             verticalAlign: VerticalAlign.CENTER,
@@ -269,7 +574,7 @@ class DocumentGenerator {
                                         right: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' }
                                     },
                                     children: [
-                                        this.paragraph('SVS TECH', {
+                                        this.paragraph('SNS TECH', {
                                             italics: true,
                                             alignment: AlignmentType.LEFT,
                                             size: 16
@@ -322,7 +627,7 @@ class DocumentGenerator {
         });
     }
 
-    static async generateDocument(pillar1Data) {
+    static async generateDocument(pillar1Data, genericPillars = {}) {
         const blocks = [];
 
         const addSpacer = (after = 180) => blocks.push(this.paragraph('', { spacing: { after } }));
@@ -560,6 +865,11 @@ class DocumentGenerator {
                 )
             );
         }
+
+        await this.appendGenericPillar(blocks, 2, 'CENTER FOR CREATIVITY (CFC)', genericPillars?.[2] || []);
+        await this.appendGenericPillar(blocks, 3, 'SKILL & CAREER DEVELOPMENT (SCD)', genericPillars?.[3] || []);
+        await this.appendGenericPillar(blocks, 4, 'INDUSTRY INSTITUTE PARTNERSHIP CELL (IIPC)', genericPillars?.[4] || []);
+        await this.appendGenericPillar(blocks, 5, 'SOCIAL RESPONSIBILITY INITIATIVES (SRI)', genericPillars?.[5] || []);
 
         if (!blocks.length) {
             blocks.push(this.paragraph('No data found to generate report. Please add records first.'));

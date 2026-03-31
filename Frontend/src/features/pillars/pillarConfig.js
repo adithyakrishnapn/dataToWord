@@ -1,0 +1,358 @@
+export const months = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+export const academicYearOptions = ['1st year', '2nd year', '3rd year', 'final year'];
+
+export const pillarConfig = {
+  2: {
+    name: 'Center for Creativity (CFC)',
+    apiBase: '/pillar2',
+    sections: [
+      {
+        key: 'cfe',
+        title: '2.1 Centre with Potential for Excellence',
+        description: 'Center of Excellence and initiatives.',
+        hasImage: true,
+        fields: [
+          { key: 'department', label: 'Department', type: 'text' },
+          { key: 'initiativeTitle', label: 'Initiative Title', type: 'text' },
+          { key: 'resourcePerson', label: 'Resource Person', type: 'text' },
+          { key: 'date', label: 'Date', type: 'date' },
+          { key: 'summary', label: 'Summary', type: 'textarea' },
+        ],
+      },
+      {
+        key: 'papers-published-scopus-wos-scie-faculty',
+        title: '2.2.3 Papers Published in Scopus, WoS & SCIE [Faculty Members]',
+        description: 'Fill exactly as publication details in report format.',
+        hasImage: true,
+        fields: [
+          { key: 'department', label: 'Department', type: 'text' },
+          { key: 'facultyMembers', label: 'Faculty Member(s)', type: 'text' },
+          { key: 'title', label: 'Title', type: 'text' },
+          { key: 'journalName', label: 'Journal Name', type: 'text' },
+          { key: 'indexingType', label: 'Indexing (Scopus/WoS/SCIE)', type: 'text' },
+          { key: 'volumeIssuePages', label: 'Volume/Issue/Pages', type: 'text' },
+          { key: 'impactFactor', label: 'Impact Factor', type: 'text' },
+          { key: 'date', label: 'Date', type: 'date' },
+        ],
+      },
+      {
+        key: 'papers-presented-faculty',
+        title: '2.2.4 Papers Presented in International & National Conferences by Faculty',
+        description: 'Conference paper presentation details.',
+        fields: [
+          { key: 'department', label: 'Department', type: 'text' },
+          { key: 'conferenceType', label: 'Conference Type (International/National)', type: 'text' },
+          { key: 'facultyMembers', label: 'Faculty Member(s)', type: 'text' },
+          { key: 'paperTitle', label: 'Paper Title', type: 'text' },
+          { key: 'conferenceName', label: 'Conference Name', type: 'text' },
+          { key: 'organizer', label: 'Organizer', type: 'text' },
+          { key: 'date', label: 'Date', type: 'date' },
+        ],
+      },
+      {
+        key: 'papers-published-students',
+        title: '2.2.5 Papers Published in International & National Journals by Students',
+        description: 'Student publication details.',
+        fields: [
+          { key: 'department', label: 'Department', type: 'text' },
+          { key: 'studentMembers', label: 'Student Member(s)', type: 'text' },
+          { key: 'paperTitle', label: 'Paper Title', type: 'text' },
+          { key: 'journalName', label: 'Journal Name', type: 'text' },
+          { key: 'volumeIssuePages', label: 'Volume/Issue/Pages', type: 'text' },
+          { key: 'date', label: 'Date', type: 'date' },
+        ],
+      },
+      {
+        key: 'papers-presented-students',
+        title: '2.2.6 Papers Presented in International & National Conferences by Students',
+        description: 'Student conference presentation details.',
+        fields: [
+          { key: 'department', label: 'Department', type: 'text' },
+          { key: 'studentMembers', label: 'Student Member(s)', type: 'text' },
+          { key: 'paperTitle', label: 'Paper Title', type: 'text' },
+          { key: 'conferenceName', label: 'Conference Name', type: 'text' },
+          { key: 'organizer', label: 'Organizer', type: 'text' },
+          { key: 'date', label: 'Date', type: 'date' },
+        ],
+      },
+      {
+        key: 'symposium-papers-students',
+        title: '2.3 Papers Presented in Symposium by Students',
+        description: 'Symposium participation and paper details.',
+        fields: [
+          { key: 'department', label: 'Department', type: 'text' },
+          { key: 'studentMembers', label: 'Student Member(s)', type: 'text' },
+          { key: 'paperTitle', label: 'Paper Title', type: 'text' },
+          { key: 'symposiumName', label: 'Symposium Name', type: 'text' },
+          { key: 'organizer', label: 'Organizer', type: 'text' },
+          { key: 'date', label: 'Date', type: 'date' },
+        ],
+      },
+      {
+        key: 'books-book-chapters',
+        title: '2.4 Books/Book Chapters Published by Faculty Members',
+        description: 'Book and chapter publication details.',
+        fields: [
+          { key: 'department', label: 'Department', type: 'text' },
+          { key: 'facultyMembers', label: 'Faculty Member(s)', type: 'text' },
+          { key: 'title', label: 'Book/Chapter Title', type: 'text' },
+          { key: 'publisher', label: 'Publisher', type: 'text' },
+          { key: 'isbnOrDoi', label: 'ISBN/DOI (optional)', type: 'text' },
+          { key: 'date', label: 'Date', type: 'date' },
+        ],
+      },
+      {
+        key: 'patents',
+        title: '2.5 Patents Filed/Published/Granted',
+        description: 'Patent details exactly per report format.',
+        fields: [
+          { key: 'department', label: 'Department', type: 'text' },
+          { key: 'applicationNumber', label: 'Application Number', type: 'text' },
+          { key: 'facultyMembers', label: 'Faculty Member(s)', type: 'text' },
+          { key: 'patentTitle', label: 'Patent Title', type: 'textarea' },
+          { key: 'filingStatus', label: 'Filed/Published/Granted', type: 'text' },
+          { key: 'designOrProduct', label: 'Design/Product', type: 'text' },
+          { key: 'date', label: 'Date of Grant/Published/Filed', type: 'date' },
+        ],
+      },
+      {
+        key: 'grants-received',
+        title: '2.6 Grants Received',
+        description: 'Grant description and amount.',
+        fields: [
+          { key: 'department', label: 'Department', type: 'text' },
+          { key: 'description', label: 'Description', type: 'textarea' },
+          { key: 'grantingAgency', label: 'Granting Agency', type: 'text' },
+          { key: 'amountReceived', label: 'Grant Amount Received (Rs)', type: 'number' },
+          { key: 'date', label: 'Date', type: 'date' },
+        ],
+      },
+      {
+        key: 'consultancy',
+        title: '2.7 Fund Generated through Consultancy',
+        description: 'Consultancy fund details.',
+        fields: [
+          { key: 'department', label: 'Department', type: 'text' },
+          { key: 'consultancyTo', label: 'Consultancy To', type: 'text' },
+          { key: 'revenueGenerated', label: 'Revenue Generated (Rs)', type: 'number' },
+          { key: 'status', label: 'Status', type: 'text' },
+        ],
+      },
+      {
+        key: 'startups',
+        title: '2.8 Fund Generated through Startups',
+        description: 'Startup name and amount generated.',
+        fields: [
+          { key: 'department', label: 'Department', type: 'text' },
+          { key: 'startupName', label: 'Startup Name', type: 'text' },
+          { key: 'monthYearStarted', label: 'Month & Year of Starting', type: 'text' },
+          { key: 'amountGenerated', label: 'Amount Generated (Rs)', type: 'number' },
+        ],
+      },
+      {
+        key: 'hackathon-ideathon-organized',
+        title: '2.9 Hackathon/Ideathon Organized',
+        description: 'Hackathon and ideathon event details.',
+        hasImage: true,
+        fields: [
+          { key: 'department', label: 'Department', type: 'text' },
+          { key: 'eventType', label: 'Event Type', type: 'text' },
+          { key: 'eventTitleOrTheme', label: 'Conference Title / Theme', type: 'text' },
+          { key: 'date', label: 'Date', type: 'date' },
+        ],
+      },
+      {
+        key: 'bmc-videos',
+        title: '2.10 Business Model Canvas (BMC) Videos',
+        description: 'BMC videos taken by branch.',
+        fields: [
+          { key: 'branch', label: 'Branch', type: 'text' },
+          { key: 'bmcVideosTaken', label: 'No. of BMC Videos Taken', type: 'number' },
+        ],
+      },
+    ],
+  },
+  3: {
+    name: 'Skill & Career Development (SCD)',
+    apiBase: '/pillar3',
+    sections: [
+      {
+        key: 'student-participation',
+        title: '3.3 Students Participation',
+        description: 'Hackathons, technical and non-technical participation.',
+        fields: [
+          { key: 'department', label: 'Department', type: 'text' },
+          { key: 'eventType', label: 'Type of Event', type: 'text' },
+          { key: 'studentsCount', label: 'Number of Students', type: 'number' },
+        ],
+      },
+      {
+        key: 'student-achievements',
+        title: '3.4 Students Achievements',
+        description: 'Student achievements in events.',
+        fields: [
+          { key: 'className', label: 'Class', type: 'text' },
+          { key: 'studentNames', label: 'Student Names', type: 'textarea' },
+          { key: 'eventName', label: 'Event Name', type: 'text' },
+          { key: 'organizedBy', label: 'Organized By', type: 'text' },
+          { key: 'place', label: 'Place', type: 'text' },
+          { key: 'date', label: 'Date', type: 'date' },
+        ],
+      },
+      {
+        key: 'iste-activities',
+        title: '3.4 ISTE Activities',
+        description: 'ISTE activity details as per template format.',
+        hasImage: true,
+        fields: [
+          { key: 'department', label: 'Department', type: 'text' },
+          { key: 'title', label: 'Title', type: 'text' },
+          { key: 'chiefGuest', label: 'Chief Guest', type: 'text' },
+          { key: 'date', label: 'Date', type: 'date' },
+        ],
+      },
+      {
+        key: 'iete-activities',
+        title: '3.4 IETE Activities',
+        description: 'IETE activity details as per template format.',
+        hasImage: true,
+        fields: [
+          { key: 'department', label: 'Department', type: 'text' },
+          { key: 'title', label: 'Title', type: 'text' },
+          { key: 'chiefGuest', label: 'Chief Guest', type: 'text' },
+          { key: 'date', label: 'Date', type: 'date' },
+        ],
+      },
+      {
+        key: 'club-activities',
+        title: '3.4 Club Activities',
+        description: 'Club activity details as per template format.',
+        hasImage: true,
+        fields: [
+          { key: 'clubName', label: 'Club Name', type: 'text' },
+          { key: 'departmentName', label: 'Department Name', type: 'text' },
+          { key: 'eventTitle', label: 'Event Title', type: 'text' },
+          { key: 'chiefGuest', label: 'Chief Guest', type: 'text' },
+          { key: 'date', label: 'Date', type: 'date' },
+        ],
+      },
+      {
+        key: 'global-certifications',
+        title: '3.7 Global Certifications',
+        description: 'Certification completion details.',
+        fields: [
+          { key: 'className', label: 'Class', type: 'text' },
+          { key: 'certificationName', label: 'Certification Name', type: 'text' },
+          { key: 'studentsCompleted', label: 'No. of Students Completed', type: 'number' },
+        ],
+      },
+    ],
+  },
+  4: {
+    name: 'Industry Institute Partnership Cell (IIPC)',
+    apiBase: '/pillar4',
+    sections: [
+      {
+        key: 'mou-signed',
+        title: '4.1 Memorandum of Understanding (MoU) Signed',
+        description: 'MoU records and period.',
+        hasImage: true,
+        fields: [
+          { key: 'department', label: 'Department', type: 'text' },
+          { key: 'company', label: 'Company', type: 'text' },
+          { key: 'mouPeriod', label: 'MoU Period', type: 'text' },
+          { key: 'benefits', label: 'Benefits', type: 'textarea' },
+        ],
+      },
+      {
+        key: 'industry-collaborated-activities',
+        title: '4.2 Industry Collaborated Activities',
+        description: 'Type of events with student count as per format table.',
+        fields: [
+          { key: 'department', label: 'Department', type: 'text' },
+          { key: 'activityType', label: 'Activity Type', type: 'text' },
+          { key: 'studentCount', label: 'Student Count', type: 'number' },
+        ],
+      },
+      {
+        key: 'internship-details',
+        title: '4.2.1 Details of Internship',
+        description: 'Internship category and amount received.',
+        fields: [
+          { key: 'department', label: 'Department', type: 'text' },
+          { key: 'studentName', label: 'Student Name', type: 'text' },
+          { key: 'industryName', label: 'Industry Name', type: 'text' },
+          { key: 'internshipCategory', label: 'Internship Category', type: 'text' },
+          { key: 'amountReceived', label: 'Amount Received', type: 'number' },
+        ],
+      },
+      {
+        key: 'industrial-visits',
+        title: '4.3 Industrial Visits Organized',
+        description: 'Industry visit details.',
+        hasImage: true,
+        fields: [
+          { key: 'department', label: 'Department', type: 'text' },
+          { key: 'industryName', label: 'Industry Name', type: 'text' },
+          { key: 'place', label: 'Place', type: 'text' },
+          { key: 'date', label: 'Date', type: 'date' },
+        ],
+      },
+      {
+        key: 'industrial-projects',
+        title: '4.4 Details of Industrial Projects',
+        description: 'Student industry project records.',
+        fields: [
+          { key: 'className', label: 'Class', type: 'text' },
+          { key: 'studentName', label: 'Student Name', type: 'text' },
+          { key: 'industryName', label: 'Industry Name', type: 'text' },
+          { key: 'projectTitle', label: 'Project Title', type: 'text' },
+        ],
+      },
+    ],
+  },
+  5: {
+    name: 'Social Responsibility Initiatives (SRI)',
+    apiBase: '/pillar5',
+    sections: [
+      {
+        key: 'extension-activities',
+        title: '5.2 Extension Activities Organized',
+        description: 'Social responsibility activities.',
+        hasImage: true,
+        fields: [
+          { key: 'department', label: 'Department', type: 'text' },
+          { key: 'title', label: 'Title', type: 'text' },
+          { key: 'venue', label: 'Venue', type: 'text' },
+          { key: 'participantsCount', label: 'Participants Count', type: 'number' },
+          { key: 'date', label: 'Date', type: 'date' },
+        ],
+      },
+      {
+        key: 'dt-bootcamps',
+        title: '5.2.1 DT Bootcamps Organized',
+        description: 'Design Thinking bootcamp records.',
+        hasImage: true,
+        fields: [
+          { key: 'department', label: 'Department', type: 'text' },
+          { key: 'title', label: 'Title', type: 'text' },
+          { key: 'venue', label: 'Venue', type: 'text' },
+          { key: 'participantsCount', label: 'Participants Count', type: 'number' },
+          { key: 'date', label: 'Date', type: 'date' },
+        ],
+      },
+    ],
+  },
+};
+
+export const pillarTabs = [
+  { id: 1, title: 'Pillar 1', subtitle: 'Learning & Teaching' },
+  { id: 2, title: 'Pillar 2', subtitle: 'Creativity' },
+  { id: 3, title: 'Pillar 3', subtitle: 'Skill & Career' },
+  { id: 4, title: 'Pillar 4', subtitle: 'IIPC' },
+  { id: 5, title: 'Pillar 5', subtitle: 'Social Responsibility' },
+];

@@ -13,6 +13,7 @@ import FacultyEventAttended from '../models/FacultyEventAttended.js';
 import StudentEventAttended from '../models/StudentEventAttended.js';
 import NPTELMOOCCourse from '../models/NPTELMOOCCourse.js';
 import AcademicAchievement from '../models/AcademicAchievement.js';
+import PillarSectionRecord from '../models/PillarSectionRecord.js';
 import DocumentGenerator from '../services/DocumentGenerator.js';
 
 const router = express.Router();
@@ -667,7 +668,8 @@ router.get('/generate-report', async (req, res) => {
             facultyEvents,
             studentEvents,
             nptelMooc,
-            academicAchievements
+            academicAchievements,
+            pillarRecords
         ] = await Promise.all([
             InnovativeTeaching.find(),
             EContent.find(),
@@ -677,7 +679,8 @@ router.get('/generate-report', async (req, res) => {
             FacultyEventAttended.find(),
             StudentEventAttended.find(),
             NPTELMOOCCourse.find(),
-            AcademicAchievement.find()
+            AcademicAchievement.find(),
+            PillarSectionRecord.find({ pillarNumber: { $in: [2, 3, 4, 5] } })
         ]);
 
         const pillar1Data = {
@@ -692,7 +695,14 @@ router.get('/generate-report', async (req, res) => {
             academicAchievements
         };
 
-        const docBuffer = await DocumentGenerator.generateDocument(pillar1Data);
+        const pillarRecordsByPillar = {
+            2: pillarRecords.filter((item) => item.pillarNumber === 2),
+            3: pillarRecords.filter((item) => item.pillarNumber === 3),
+            4: pillarRecords.filter((item) => item.pillarNumber === 4),
+            5: pillarRecords.filter((item) => item.pillarNumber === 5)
+        };
+
+        const docBuffer = await DocumentGenerator.generateDocument(pillar1Data, pillarRecordsByPillar);
         await ensureReportsDir();
         const generatedFileName = buildReportFileName();
         const outputPath = path.join(reportsDir, generatedFileName);

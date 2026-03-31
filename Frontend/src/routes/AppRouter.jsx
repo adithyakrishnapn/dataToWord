@@ -1,5 +1,5 @@
-import PillarOnePage from '../features/pillar1/PillarOnePage';
+import PillarsCarouselPage from '../features/pillars/PillarsCarouselPage';
 
 export default function AppRouter() {
-  return <PillarOnePage />;
+  return <PillarsCarouselPage />;
 }
