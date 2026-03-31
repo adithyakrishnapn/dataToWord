@@ -236,6 +236,12 @@ body {
   background: #f2ebe0;
 }
 
+.history-row-actions {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
 @keyframes rise-in {
   from {
     opacity: 0;

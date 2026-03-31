@@ -35,6 +35,8 @@ export const pillar1Api = {
     httpClient.get(`${PILLAR_BASE}/generate-report`, { responseType: 'blob' }),
   listReportHistory: () =>
     httpClient.get(`${PILLAR_BASE}/report-history`),
+  deleteReportByName: (fileName) =>
+    httpClient.delete(`${PILLAR_BASE}/report-history/${encodeURIComponent(fileName)}`),
   downloadReportByName: (fileName) =>
     httpClient.get(`${PILLAR_BASE}/report-history/${encodeURIComponent(fileName)}/download`, { responseType: 'blob' }),
   downloadAllReports: () =>

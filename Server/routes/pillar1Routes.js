@@ -488,6 +488,24 @@ router.get('/report-history/download-all', async (req, res) => {
     }
 });
 
+router.delete('/report-history/:fileName', async (req, res) => {
+    try {
+        const decodedFileName = decodeURIComponent(req.params.fileName || '');
+        const safeFileName = sanitizeReportFileName(decodedFileName);
+        if (!safeFileName) {
+            return res.status(400).json({ error: 'Invalid report file name.' });
+        }
+
+        await ensureReportsDir();
+        const reportPath = path.join(reportsDir, safeFileName);
+        await fs.unlink(reportPath);
+
+        res.status(200).json({ message: 'Report deleted successfully.' });
+    } catch {
+        res.status(404).json({ error: 'Report file not found.' });
+    }
+});
+
 router.get('/report-history/:fileName/download', async (req, res) => {
     try {
         const decodedFileName = decodeURIComponent(req.params.fileName || '');

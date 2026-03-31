@@ -22,6 +22,7 @@ export default function ReportHistoryPanel() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
   const [downloadingAll, setDownloadingAll] = useState(false);
+  const [deletingFileName, setDeletingFileName] = useState('');
   const [error, setError] = useState('');
 
   const loadHistory = async () => {
@@ -61,6 +62,24 @@ export default function ReportHistoryPanel() {
       setError(err?.response?.data?.error || 'Failed to download reports archive.');
     } finally {
       setDownloadingAll(false);
+    }
+  };
+
+  const handleDelete = async (fileName) => {
+    const shouldDelete = window.confirm(`Delete report ${fileName}?`);
+    if (!shouldDelete) {
+      return;
+    }
+
+    try {
+      setDeletingFileName(fileName);
+      setError('');
+      await pillar1Api.deleteReportByName(fileName);
+      await loadHistory();
+    } catch (err) {
+      setError(err?.response?.data?.error || 'Failed to delete selected report.');
+    } finally {
+      setDeletingFileName('');
     }
   };
 
@@ -106,9 +125,16 @@ export default function ReportHistoryPanel() {
                   <td>{item.fileName}</td>
                   <td>{formatDate(item.createdAt)}</td>
                   <td>{formatSize(item.sizeBytes)}</td>
-                  <td>
+                  <td className="history-row-actions">
                     <Button type="button" onClick={() => handleDownload(item.fileName)}>
                       Download
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => handleDelete(item.fileName)}
+                      disabled={deletingFileName === item.fileName}
+                    >
+                      {deletingFileName === item.fileName ? 'Deleting...' : 'Delete'}
                     </Button>
                   </td>
                 </tr>
