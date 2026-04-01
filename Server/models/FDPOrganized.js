@@ -31,7 +31,6 @@ const fdpOrganizedSchema = new mongoose.Schema({
     },
     academicYear: {
         type: String,
-        enum: ['1st year', '2nd year', '3rd year', 'final year'],
         required: true
     },
     month: {

@@ -31,8 +31,28 @@ export const pillar1Api = {
     }),
   createAcademicAchievement: (payload) =>
     httpClient.post(`${PILLAR_BASE}/academic-achievements`, payload),
-  downloadReport: () =>
-    httpClient.get(`${PILLAR_BASE}/generate-report`, { responseType: 'blob' }),
+  downloadReport: (month) =>
+    httpClient.get(`${PILLAR_BASE}/generate-report`, {
+      responseType: 'blob',
+      params: month ? { month } : undefined,
+    }),
+  getMonthlySummary: (month) =>
+    httpClient.get(`${PILLAR_BASE}/summary-report`, {
+      params: {
+        ...(month ? { month } : {}),
+        provider: 'local',
+      },
+      timeout: 120000,
+    }),
+  downloadMonthlySummary: (month) =>
+    httpClient.get(`${PILLAR_BASE}/summary-report/download`, {
+      responseType: 'blob',
+      params: {
+        ...(month ? { month } : {}),
+        provider: 'local',
+      },
+      timeout: 120000,
+    }),
   listReportHistory: () =>
     httpClient.get(`${PILLAR_BASE}/report-history`),
   deleteReportByName: (fileName) =>
@@ -43,24 +63,24 @@ export const pillar1Api = {
     httpClient.get(`${PILLAR_BASE}/report-history/download-all`, { responseType: 'blob' }),
 
   // GET methods for fetching records
-  getInnovativeTeachingRecords: () =>
-    httpClient.get(`${PILLAR_BASE}/innovative-teaching`),
-  getEContentsRecords: () =>
-    httpClient.get(`${PILLAR_BASE}/e-contents`),
-  getGuestLectureRecords: () =>
-    httpClient.get(`${PILLAR_BASE}/guest-lectures`),
-  getFdpOrganizedRecords: () =>
-    httpClient.get(`${PILLAR_BASE}/fdps-organized`),
-  getCourseFacilitatorRecords: () =>
-    httpClient.get(`${PILLAR_BASE}/course-facilitator-sessions`),
-  getFacultyEventRecords: () =>
-    httpClient.get(`${PILLAR_BASE}/faculty-events`),
-  getStudentEventRecords: () =>
-    httpClient.get(`${PILLAR_BASE}/student-events`),
-  getNptelMoocRecords: () =>
-    httpClient.get(`${PILLAR_BASE}/nptel-mooc`),
-  getAcademicAchievementRecords: () =>
-    httpClient.get(`${PILLAR_BASE}/academic-achievements`),
+  getInnovativeTeachingRecords: (month) =>
+    httpClient.get(`${PILLAR_BASE}/innovative-teaching`, { params: month ? { month } : undefined }),
+  getEContentsRecords: (month) =>
+    httpClient.get(`${PILLAR_BASE}/e-contents`, { params: month ? { month } : undefined }),
+  getGuestLectureRecords: (month) =>
+    httpClient.get(`${PILLAR_BASE}/guest-lectures`, { params: month ? { month } : undefined }),
+  getFdpOrganizedRecords: (month) =>
+    httpClient.get(`${PILLAR_BASE}/fdps-organized`, { params: month ? { month } : undefined }),
+  getCourseFacilitatorRecords: (month) =>
+    httpClient.get(`${PILLAR_BASE}/course-facilitator-sessions`, { params: month ? { month } : undefined }),
+  getFacultyEventRecords: (month) =>
+    httpClient.get(`${PILLAR_BASE}/faculty-events`, { params: month ? { month } : undefined }),
+  getStudentEventRecords: (month) =>
+    httpClient.get(`${PILLAR_BASE}/student-events`, { params: month ? { month } : undefined }),
+  getNptelMoocRecords: (month) =>
+    httpClient.get(`${PILLAR_BASE}/nptel-mooc`, { params: month ? { month } : undefined }),
+  getAcademicAchievementRecords: (month) =>
+    httpClient.get(`${PILLAR_BASE}/academic-achievements`, { params: month ? { month } : undefined }),
 
   // PUT methods for updating records
   updateInnovativeTeaching: (id, formData) =>

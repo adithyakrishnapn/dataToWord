@@ -3,6 +3,8 @@ import SectionCard from './components/SectionCard';
 import DownloadReportButton from './components/DownloadReportButton';
 import ReportHistoryPanel from './components/ReportHistoryPanel';
 import RecordsList from './components/RecordsList';
+import ImportExportModal from '../../components/modals/ImportExportModal';
+import MonthlySummaryPanel from '../../components/reports/MonthlySummaryPanel';
 import InnovativeTeachingForm from './forms/InnovativeTeachingForm';
 import EContentsForm from './forms/EContentsForm';
 import GuestLectureForm from './forms/GuestLectureForm';
@@ -34,6 +36,7 @@ export default function PillarOnePage() {
   const [activeTab, setActiveTab] = useState('entry');
   const [selectedMonth, setSelectedMonth] = useState('March');
   const [selectedEditSection, setSelectedEditSection] = useState(null);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   return (
     <main className="page-wrap">
@@ -88,12 +91,31 @@ export default function PillarOnePage() {
           >
             History
           </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'summary'}
+            className={`hero-tab ${activeTab === 'summary' ? 'hero-tab-active' : ''}`}
+            onClick={() => { setActiveTab('summary'); setSelectedEditSection(null); }}
+          >
+            Summary
+          </button>
+        </div>
+
+        <div style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className="hero-tab"
+            onClick={() => setIsImportModalOpen(true)}
+          >
+            Import / Export Excel
+          </button>
         </div>
       </header>
 
       {activeTab === 'entry' ? (
         <>
-          <DownloadReportButton />
+          <DownloadReportButton month={selectedMonth} />
 
           <SectionCard title="1. Innovative Teaching Methodologies" description="Best one per department.">
             <InnovativeTeachingForm month={selectedMonth} />
@@ -137,6 +159,7 @@ export default function PillarOnePage() {
           {selectedEditSection ? (
             <RecordsList 
               section={selectedEditSection} 
+              selectedMonth={selectedMonth}
               onClose={() => setSelectedEditSection(null)}
             />
           ) : (
@@ -162,9 +185,18 @@ export default function PillarOnePage() {
             </div>
           )}
         </div>
-      ) : (
+      ) : activeTab === 'history' ? (
         <ReportHistoryPanel />
+      ) : (
+        <MonthlySummaryPanel month={selectedMonth} />
       )}
+
+      <ImportExportModal
+        isOpen={isImportModalOpen}
+        selectedMonth={selectedMonth}
+        onClose={() => setIsImportModalOpen(false)}
+        onImportSuccess={() => setIsImportModalOpen(false)}
+      />
     </main>
   );
 }

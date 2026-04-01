@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { API_ROOT } from '../config/apiConfig';
 
 const httpClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000',
+  baseURL: API_ROOT,
   timeout: 30000,
 });
 

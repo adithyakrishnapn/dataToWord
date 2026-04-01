@@ -3,10 +3,14 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import { useSubmit } from '../../hooks/useSubmit';
 import DownloadReportButton from '../pillar1/components/DownloadReportButton';
+import ReportHistoryPanel from '../pillar1/components/ReportHistoryPanel';
 import SectionCard from '../pillar1/components/SectionCard';
 import StatusText from '../pillar1/components/StatusText';
+import ImportExportModal from '../../components/modals/ImportExportModal';
+import MonthlySummaryPanel from '../../components/reports/MonthlySummaryPanel';
 import { pillarConfig, months, academicYearOptions } from './pillarConfig';
 import { pillarGenericApi } from '../../services/pillarGenericApi';
+import { toAbsoluteApiUrl } from '../../config/apiConfig';
 
 function buildInitialData(fields) {
   const initial = {};
@@ -16,11 +20,17 @@ function buildInitialData(fields) {
   return initial;
 }
 
+function getAbsoluteMediaUrl(pathValue) {
+  if (!pathValue) return '';
+  return toAbsoluteApiUrl(pathValue);
+}
+
 export default function GenericPillarPage({ pillarId }) {
   const config = pillarConfig[pillarId];
   const [activeTab, setActiveTab] = useState('entry');
   const [selectedMonth, setSelectedMonth] = useState('March');
   const [selectedEditSection, setSelectedEditSection] = useState(null);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   if (!config) return null;
 
@@ -68,10 +78,38 @@ export default function GenericPillarPage({ pillarId }) {
           >
             ✎ Edit Records
           </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'history'}
+            className={`hero-tab ${activeTab === 'history' ? 'hero-tab-active' : ''}`}
+            onClick={() => { setActiveTab('history'); setSelectedEditSection(null); }}
+          >
+            History
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'summary'}
+            className={`hero-tab ${activeTab === 'summary' ? 'hero-tab-active' : ''}`}
+            onClick={() => { setActiveTab('summary'); setSelectedEditSection(null); }}
+          >
+            Summary
+          </button>
+        </div>
+
+        <div style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className="hero-tab"
+            onClick={() => setIsImportModalOpen(true)}
+          >
+            Import / Export Excel
+          </button>
         </div>
       </header>
 
-      <DownloadReportButton />
+      <DownloadReportButton month={selectedMonth} />
 
       {activeTab === 'entry' ? (
         <>
@@ -81,7 +119,7 @@ export default function GenericPillarPage({ pillarId }) {
             </SectionCard>
           ))}
         </>
-      ) : (
+      ) : activeTab === 'edit' ? (
         <div style={{ padding: '20px' }}>
           <h2>Edit and Delete Records</h2>
           {selectedEditSection ? (
@@ -114,7 +152,18 @@ export default function GenericPillarPage({ pillarId }) {
             </div>
           )}
         </div>
+      ) : activeTab === 'history' ? (
+        <ReportHistoryPanel />
+      ) : (
+        <MonthlySummaryPanel month={selectedMonth} />
       )}
+
+      <ImportExportModal
+        isOpen={isImportModalOpen}
+        selectedMonth={selectedMonth}
+        onClose={() => setIsImportModalOpen(false)}
+        onImportSuccess={() => setIsImportModalOpen(false)}
+      />
     </main>
   );
 }
@@ -368,7 +417,14 @@ function GenericRecordsList({ pillarId, section, selectedMonth, onClose }) {
 
                   {section.hasImage ? (
                     <label className="field">
-                      <span>Image (optional)</span>
+                      <span>Current Image URL</span>
+                      <input value={editData.imagePath ? getAbsoluteMediaUrl(editData.imagePath) : ''} readOnly placeholder="No image uploaded" />
+                    </label>
+                  ) : null}
+
+                  {section.hasImage ? (
+                    <label className="field">
+                      <span>Replace Image (optional)</span>
                       <input type="file" accept="image/*" onChange={(e) => setEditImage(e.target.files?.[0] || null)} />
                     </label>
                   ) : null}
@@ -380,9 +436,21 @@ function GenericRecordsList({ pillarId, section, selectedMonth, onClose }) {
                 <>
                   <p style={{ margin: 0, fontWeight: '500' }}>{record.sectionTitle}</p>
                   <p style={{ margin: '4px 0', color: '#666' }}>{record.department || 'No Department'} | {record.month} | {record.academicYear}</p>
-                  <p style={{ margin: '0 0 8px 0' }}>
-                    {Object.entries(record.data || {}).slice(0, 3).map(([key, value]) => `${key}: ${value}`).join(' | ')}
-                  </p>
+                  <div style={{ margin: '0 0 8px 0', fontSize: '13px' }}>
+                    {section.fields.slice(0, 4).map((field) => (
+                      <p key={field.key} style={{ margin: '2px 0' }}>
+                        <strong>{field.label}:</strong> {record?.data?.[field.key] || '-'}
+                      </p>
+                    ))}
+                    {record.imagePath ? (
+                      <p style={{ margin: '4px 0 0' }}>
+                        <strong>Image URL:</strong>{' '}
+                        <a href={getAbsoluteMediaUrl(record.imagePath)} target="_blank" rel="noreferrer">
+                          {getAbsoluteMediaUrl(record.imagePath)}
+                        </a>
+                      </p>
+                    ) : null}
+                  </div>
                   <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
                     <button
                       onClick={() => handleEdit(record)}

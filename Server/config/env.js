@@ -12,8 +12,16 @@ function required(name) {
 
 const dbUrl = required("DB_URL");
 const port = required("PORT");
+const geminiApiKey = process.env.GEMINI_API_KEY || '';
+const geminiApiUrl = process.env.GEMINI_API_URL || '';
+const geminiModel = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+const summaryProvider = process.env.SUMMARY_PROVIDER || 'local';
 
 export default {
     dbUrl,
-    port
+    port,
+    geminiApiKey,
+    geminiApiUrl,
+    geminiModel,
+    summaryProvider
 }

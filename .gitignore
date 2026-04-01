@@ -31,4 +31,9 @@ Thumbs.db
 
 # Runtime/generated files
 Server/public/uploads/
+Server/public/reports/
+Server/public/temp/
+Server/public/generated/
+Server/public/**/*.docx
+Server/public/**/*.xlsx
 Server/report-test.docx

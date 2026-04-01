@@ -1,17 +1,29 @@
 import { useState, useEffect } from 'react';
 import { pillar1Api } from '../../../services/pillar1Api';
+import {
+  SECTION_1_FIELDS,
+  SECTION_2_FIELDS,
+  SECTION_3_1_FIELDS,
+  SECTION_3_2_FIELDS,
+  SECTION_3_3_FIELDS,
+  SECTION_4_FIELDS,
+  SECTION_5_FIELDS,
+  SECTION_6_FIELDS,
+  SECTION_7_FIELDS,
+} from '../../../constants/formConstants';
+import { toAbsoluteApiUrl } from '../../../config/apiConfig';
 
 // API method mapping to pillar1Api service
 const apiMethods = {
-  innovative: () => pillar1Api.getInnovativeTeachingRecords(),
-  econtents: () => pillar1Api.getEContentsRecords(),
-  guest: () => pillar1Api.getGuestLectureRecords(),
-  fdp: () => pillar1Api.getFdpOrganizedRecords(),
-  facilitator: () => pillar1Api.getCourseFacilitatorRecords(),
-  faculty: () => pillar1Api.getFacultyEventRecords(),
-  student: () => pillar1Api.getStudentEventRecords(),
-  nptel: () => pillar1Api.getNptelMoocRecords(),
-  achievement: () => pillar1Api.getAcademicAchievementRecords(),
+  innovative: (month) => pillar1Api.getInnovativeTeachingRecords(month),
+  econtents: (month) => pillar1Api.getEContentsRecords(month),
+  guest: (month) => pillar1Api.getGuestLectureRecords(month),
+  fdp: (month) => pillar1Api.getFdpOrganizedRecords(month),
+  facilitator: (month) => pillar1Api.getCourseFacilitatorRecords(month),
+  faculty: (month) => pillar1Api.getFacultyEventRecords(month),
+  student: (month) => pillar1Api.getStudentEventRecords(month),
+  nptel: (month) => pillar1Api.getNptelMoocRecords(month),
+  achievement: (month) => pillar1Api.getAcademicAchievementRecords(month),
 };
 
 // Delete method mapping
@@ -40,11 +52,59 @@ const updateMethods = {
   achievement: (id, data) => pillar1Api.updateAcademicAchievement(id, data),
 };
 
-export default function RecordsList({ section, onClose }) {
+const sectionFieldMap = {
+  innovative: SECTION_1_FIELDS,
+  econtents: SECTION_2_FIELDS,
+  guest: SECTION_3_1_FIELDS,
+  fdp: SECTION_3_2_FIELDS,
+  facilitator: SECTION_3_3_FIELDS,
+  faculty: SECTION_4_FIELDS,
+  student: SECTION_5_FIELDS,
+  nptel: SECTION_6_FIELDS,
+  achievement: SECTION_7_FIELDS,
+};
+
+const mediaConfigMap = {
+  innovative: { pathKey: 'imagePath', uploadKey: 'image', label: 'Image URL' },
+  guest: { pathKey: 'imagePath', uploadKey: 'image', label: 'Image URL' },
+  fdp: { pathKey: 'imagePath', uploadKey: 'image', label: 'Image URL' },
+  facilitator: { pathKey: 'imagePath', uploadKey: 'image', label: 'Image URL' },
+  faculty: { pathKey: 'certificatePath', uploadKey: 'certificate', label: 'Certificate URL' },
+  nptel: { pathKey: 'certificatePath', uploadKey: 'certificate', label: 'Certificate URL' },
+};
+
+const systemKeys = new Set(['_id', '__v', 'createdAt']);
+const labelOverrides = {
+  month: 'Month',
+  academicYear: 'Academic Year',
+  graduationPercentage: 'Graduation Percentage',
+};
+
+function humanizeKey(key = '') {
+  return key
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function getLabel(section, key) {
+  const fieldConfig = sectionFieldMap[section]?.[key];
+  if (fieldConfig?.label) return fieldConfig.label;
+  if (labelOverrides[key]) return labelOverrides[key];
+  return humanizeKey(key);
+}
+
+function getMediaUrl(pathValue) {
+  if (!pathValue) return '';
+  return toAbsoluteApiUrl(pathValue);
+}
+
+export default function RecordsList({ section, selectedMonth, onClose }) {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
+  const [editMediaFile, setEditMediaFile] = useState(null);
   const [deleting, setDeleting] = useState(null);
 
   const sections = {
@@ -63,12 +123,12 @@ export default function RecordsList({ section, onClose }) {
 
   useEffect(() => {
     loadRecords();
-  }, [section]);
+  }, [section, selectedMonth]);
 
   const loadRecords = async () => {
     try {
       setLoading(true);
-      const { data } = await apiMethods[section]();
+      const { data } = await apiMethods[section](selectedMonth);
       setRecords(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Failed to load records:', error);
@@ -81,6 +141,7 @@ export default function RecordsList({ section, onClose }) {
   const handleEdit = (record) => {
     setEditingId(record._id);
     setEditForm({ ...record });
+    setEditMediaFile(null);
   };
 
   const handleDelete = async (id) => {
@@ -100,9 +161,34 @@ export default function RecordsList({ section, onClose }) {
 
   const handleUpdate = async () => {
     try {
-      const { data: updated } = await updateMethods[section](editingId, editForm);
-      setRecords(records.map(r => r._id === editingId ? updated : r));
+      const mediaConfig = mediaConfigMap[section];
+      let payload = editForm;
+
+      if (mediaConfig) {
+        const formData = new FormData();
+        Object.entries(editForm)
+          .filter(([key]) => !systemKeys.has(key) && key !== mediaConfig.pathKey)
+          .forEach(([key, value]) => {
+            if (value === undefined || value === null) return;
+            if (Array.isArray(value) || typeof value === 'object') {
+              formData.append(key, JSON.stringify(value));
+              return;
+            }
+            formData.append(key, String(value));
+          });
+
+        if (editMediaFile) {
+          formData.append(mediaConfig.uploadKey, editMediaFile);
+        }
+
+        payload = formData;
+      }
+
+      const { data: updatedResponse } = await updateMethods[section](editingId, payload);
+      const updatedRecord = updatedResponse?.data || updatedResponse;
+      setRecords(records.map((r) => (r._id === editingId ? updatedRecord : r)));
       setEditingId(null);
+      setEditMediaFile(null);
       alert('Record updated successfully!');
     } catch (error) {
       console.error('Update failed:', error);
@@ -115,7 +201,7 @@ export default function RecordsList({ section, onClose }) {
   return (
     <div style={{ padding: '20px' }}>
       <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3>{config.name} Records ({records.length})</h3>
+        <h3>{config.name} Records - {selectedMonth} ({records.length})</h3>
         <button onClick={onClose} style={{ padding: '8px 16px', cursor: 'pointer' }}>Close</button>
       </div>
 
@@ -135,9 +221,12 @@ export default function RecordsList({ section, onClose }) {
             >
               {editingId === record._id ? (
                 <EditForm
+                  section={section}
                   record={editForm}
                   onChange={setEditForm}
                   onSave={handleUpdate}
+                  mediaFile={editMediaFile}
+                  onMediaFileChange={setEditMediaFile}
                   onCancel={() => setEditingId(null)}
                 />
               ) : (
@@ -195,29 +284,85 @@ function RecordPreview({ record, section }) {
     achievement: () => `${record.branch} - ${record.semesterYear}`
   };
 
-  return <p style={{ margin: '0 0 8px 0', fontWeight: '500' }}>{previews[section]?.()} </p>;
-}
+  const mediaConfig = mediaConfigMap[section];
+  const mediaValue = mediaConfig ? record[mediaConfig.pathKey] : '';
+  const mediaUrl = getMediaUrl(mediaValue);
 
-function EditForm({ record, onChange, onSave, onCancel }) {
   return (
     <div>
+      <p style={{ margin: '0 0 8px 0', fontWeight: '500' }}>{previews[section]?.()} </p>
+      {mediaUrl ? (
+        <p style={{ margin: 0, fontSize: '13px' }}>
+          <strong>{mediaConfig.label}:</strong>{' '}
+          <a href={mediaUrl} target="_blank" rel="noreferrer">{mediaUrl}</a>
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function EditForm({ section, record, onChange, onSave, onCancel, mediaFile, onMediaFileChange }) {
+  const mediaConfig = mediaConfigMap[section];
+  const mediaPathValue = mediaConfig ? record?.[mediaConfig.pathKey] : '';
+  const mediaUrl = getMediaUrl(mediaPathValue);
+
+  return (
+    <div>
+      {mediaConfig ? (
+        <div style={{ marginBottom: '12px' }}>
+          <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600' }}>{mediaConfig.label}</label>
+          <input
+            type="text"
+            value={mediaUrl || ''}
+            readOnly
+            style={{
+              width: '100%',
+              padding: '8px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              marginBottom: '8px',
+              backgroundColor: '#f8f9fa'
+            }}
+          />
+          {mediaUrl ? (
+            <a href={mediaUrl} target="_blank" rel="noreferrer" style={{ fontSize: '13px' }}>Open current file</a>
+          ) : (
+            <span style={{ fontSize: '13px', color: '#666' }}>No file available</span>
+          )}
+          <div style={{ marginTop: '10px' }}>
+            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600' }}>Replace File (Optional)</label>
+            <input
+              type="file"
+              accept={mediaConfig.uploadKey === 'image' ? 'image/*' : '.pdf,.jpg,.jpeg,.png,.webp'}
+              onChange={(e) => onMediaFileChange(e.target.files?.[0] || null)}
+            />
+            {mediaFile ? (
+              <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#555' }}>Selected: {mediaFile.name}</p>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
         {Object.entries(record)
-          .filter(([key]) => !['_id', '__v', 'imagePath', 'certificatePath', 'createdAt'].includes(key))
+          .filter(([key]) => !systemKeys.has(key) && key !== 'imagePath' && key !== 'certificatePath')
           .map(([key, value]) => (
-            <input
-              key={key}
-              type={typeof value === 'number' ? 'number' : 'text'}
-              placeholder={key}
-              value={Array.isArray(value) ? JSON.stringify(value) : value || ''}
-              onChange={(e) => onChange({ ...record, [key]: e.target.value })}
-              style={{
-                padding: '8px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px'
-              }}
-            />
+            <label key={key} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <span style={{ fontSize: '13px', fontWeight: '600' }}>{getLabel(section, key)}</span>
+              <input
+                type={typeof value === 'number' ? 'number' : 'text'}
+                value={Array.isArray(value) || typeof value === 'object'
+                  ? JSON.stringify(value)
+                  : (value ?? '')}
+                onChange={(e) => onChange({ ...record, [key]: e.target.value })}
+                style={{
+                  padding: '8px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '14px'
+                }}
+              />
+            </label>
           ))}
       </div>
       <div style={{ display: 'flex', gap: '8px' }}>

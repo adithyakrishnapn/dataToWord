@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import JSZip from 'jszip';
+import multer from 'multer';
 import upload from '../config/multerConfig.js';
 import InnovativeTeaching from '../models/InnovativeTeachingMethodology.js';
 import EContent from '../models/EContent.js';
@@ -15,11 +16,33 @@ import NPTELMOOCCourse from '../models/NPTELMOOCCourse.js';
 import AcademicAchievement from '../models/AcademicAchievement.js';
 import PillarSectionRecord from '../models/PillarSectionRecord.js';
 import DocumentGenerator from '../services/DocumentGenerator.js';
+import TemplateDocumentGenerator from '../services/TemplateDocumentGenerator.js';
+import TemplateExcelGenerator from '../services/TemplateExcelGenerator.js';
+import ExcelImportParser from '../services/ExcelImportParser.js';
+import MonthlySummaryService from '../services/MonthlySummaryService.js';
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const reportsDir = path.join(__dirname, '..', 'public', 'reports');
+
+const excelUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const allowedMimes = [
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-excel'
+        ];
+        const lowerName = String(file.originalname || '').toLowerCase();
+        const validExtension = lowerName.endsWith('.xlsx') || lowerName.endsWith('.xls');
+        if (allowedMimes.includes(file.mimetype) || validExtension) {
+            cb(null, true);
+            return;
+        }
+        cb(new Error('Only Excel files (.xlsx, .xls) are allowed'));
+    }
+});
 
 async function ensureReportsDir() {
     await fs.mkdir(reportsDir, { recursive: true });
@@ -71,6 +94,24 @@ function parseArrayField(value) {
     return [];
 }
 
+function escapeRegex(value = '') {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function buildMonthFilter(month) {
+    const normalized = String(month || '').trim();
+    if (!normalized) {
+        return {};
+    }
+
+    return {
+        month: {
+            $regex: `^${escapeRegex(normalized)}$`,
+            $options: 'i'
+        }
+    };
+}
+
 // ==================== SECTION 1: INNOVATIVE TEACHING METHODOLOGIES ====================
 router.post('/innovative-teaching', upload.single('image'), async (req, res) => {
     try {
@@ -97,7 +138,7 @@ router.post('/innovative-teaching', upload.single('image'), async (req, res) => 
 
 router.get('/innovative-teaching', async (req, res) => {
     try {
-        const data = await InnovativeTeaching.find();
+        const data = await InnovativeTeaching.find(buildMonthFilter(req.query.month));
         res.status(200).json(data);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -140,7 +181,7 @@ router.post('/e-contents', async (req, res) => {
 
 router.get('/e-contents', async (req, res) => {
     try {
-        const data = await EContent.find();
+        const data = await EContent.find(buildMonthFilter(req.query.month));
         res.status(200).json(data);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -173,7 +214,7 @@ router.post('/guest-lectures', upload.single('image'), async (req, res) => {
 
 router.get('/guest-lectures', async (req, res) => {
     try {
-        const data = await GuestLecture.find();
+        const data = await GuestLecture.find(buildMonthFilter(req.query.month));
         res.status(200).json(data);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -207,7 +248,7 @@ router.post('/fdps-organized', upload.single('image'), async (req, res) => {
 
 router.get('/fdps-organized', async (req, res) => {
     try {
-        const data = await FDPOrganized.find();
+        const data = await FDPOrganized.find(buildMonthFilter(req.query.month));
         res.status(200).json(data);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -242,7 +283,7 @@ router.post('/course-facilitator-sessions', upload.single('image'), async (req, 
 
 router.get('/course-facilitator-sessions', async (req, res) => {
     try {
-        const data = await CourseFacilitatorSession.find();
+        const data = await CourseFacilitatorSession.find(buildMonthFilter(req.query.month));
         res.status(200).json(data);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -278,7 +319,7 @@ router.post('/faculty-events', upload.single('certificate'), async (req, res) =>
 
 router.get('/faculty-events', async (req, res) => {
     try {
-        const data = await FacultyEventAttended.find();
+        const data = await FacultyEventAttended.find(buildMonthFilter(req.query.month));
         res.status(200).json(data);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -313,7 +354,7 @@ router.post('/student-events', async (req, res) => {
 
 router.get('/student-events', async (req, res) => {
     try {
-        const data = await StudentEventAttended.find();
+        const data = await StudentEventAttended.find(buildMonthFilter(req.query.month));
         res.status(200).json(data);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -348,7 +389,7 @@ router.post('/nptel-mooc', upload.single('certificate'), async (req, res) => {
 
 router.get('/nptel-mooc', async (req, res) => {
     try {
-        const data = await NPTELMOOCCourse.find();
+        const data = await NPTELMOOCCourse.find(buildMonthFilter(req.query.month));
         res.status(200).json(data);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -378,7 +419,7 @@ router.post('/academic-achievements', async (req, res) => {
 
 router.get('/academic-achievements', async (req, res) => {
     try {
-        const data = await AcademicAchievement.find();
+        const data = await AcademicAchievement.find(buildMonthFilter(req.query.month));
         res.status(200).json(data);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -658,6 +699,13 @@ router.delete('/academic-achievements/:id', async (req, res) => {
 // ==================== DOCUMENT GENERATION ====================
 router.get('/generate-report', async (req, res) => {
     try {
+        const compatibility = String(req.query.compatibility || '').toLowerCase();
+        const monthFilter = buildMonthFilter(req.query.month);
+        const pillarRecordFilter = {
+            pillarNumber: { $in: [2, 3, 4, 5] },
+            ...monthFilter
+        };
+
         // Fetch all data from all sections
         const [
             innovativeTeaching,
@@ -671,16 +719,16 @@ router.get('/generate-report', async (req, res) => {
             academicAchievements,
             pillarRecords
         ] = await Promise.all([
-            InnovativeTeaching.find(),
-            EContent.find(),
-            GuestLecture.find(),
-            FDPOrganized.find(),
-            CourseFacilitatorSession.find(),
-            FacultyEventAttended.find(),
-            StudentEventAttended.find(),
-            NPTELMOOCCourse.find(),
-            AcademicAchievement.find(),
-            PillarSectionRecord.find({ pillarNumber: { $in: [2, 3, 4, 5] } })
+            InnovativeTeaching.find(monthFilter),
+            EContent.find(monthFilter),
+            GuestLecture.find(monthFilter),
+            FDPOrganized.find(monthFilter),
+            CourseFacilitatorSession.find(monthFilter),
+            FacultyEventAttended.find(monthFilter),
+            StudentEventAttended.find(monthFilter),
+            NPTELMOOCCourse.find(monthFilter),
+            AcademicAchievement.find(monthFilter),
+            PillarSectionRecord.find(pillarRecordFilter)
         ]);
 
         const pillar1Data = {
@@ -695,14 +743,22 @@ router.get('/generate-report', async (req, res) => {
             academicAchievements
         };
 
-        const pillarRecordsByPillar = {
-            2: pillarRecords.filter((item) => item.pillarNumber === 2),
-            3: pillarRecords.filter((item) => item.pillarNumber === 3),
-            4: pillarRecords.filter((item) => item.pillarNumber === 4),
-            5: pillarRecords.filter((item) => item.pillarNumber === 5)
-        };
+        const isWord2007Mode = compatibility === 'word2007' || compatibility === '2007' || compatibility === 'legacy';
 
-        const docBuffer = await DocumentGenerator.generateDocument(pillar1Data, pillarRecordsByPillar);
+        let docBuffer;
+        if (isWord2007Mode) {
+            docBuffer = await TemplateDocumentGenerator.generateDocument(pillar1Data);
+        } else {
+            const pillarRecordsByPillar = {
+                2: pillarRecords.filter((item) => item.pillarNumber === 2),
+                3: pillarRecords.filter((item) => item.pillarNumber === 3),
+                4: pillarRecords.filter((item) => item.pillarNumber === 4),
+                5: pillarRecords.filter((item) => item.pillarNumber === 5)
+            };
+
+            docBuffer = await DocumentGenerator.generateDocument(pillar1Data, pillarRecordsByPillar);
+        }
+
         await ensureReportsDir();
         const generatedFileName = buildReportFileName();
         const outputPath = path.join(reportsDir, generatedFileName);
@@ -714,6 +770,170 @@ router.get('/generate-report', async (req, res) => {
         res.send(docBuffer);
     } catch (error) {
         console.error('Error generating report:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.get('/generate-report-word2007', async (req, res) => {
+    try {
+        const monthFilter = buildMonthFilter(req.query.month);
+        const [
+            innovativeTeaching,
+            eContents,
+            guestLectures,
+            fdpsOrganized,
+            courseFacilitatorSessions,
+            facultyEvents,
+            studentEvents,
+            nptelMooc,
+            academicAchievements
+        ] = await Promise.all([
+            InnovativeTeaching.find(monthFilter),
+            EContent.find(monthFilter),
+            GuestLecture.find(monthFilter),
+            FDPOrganized.find(monthFilter),
+            CourseFacilitatorSession.find(monthFilter),
+            FacultyEventAttended.find(monthFilter),
+            StudentEventAttended.find(monthFilter),
+            NPTELMOOCCourse.find(monthFilter),
+            AcademicAchievement.find(monthFilter)
+        ]);
+
+        const pillar1Data = {
+            innovativeTeaching,
+            eContents,
+            guestLectures,
+            fdpsOrganized,
+            courseFacilitatorSessions,
+            facultyEvents,
+            studentEvents,
+            nptelMooc,
+            academicAchievements
+        };
+
+        const docBuffer = await TemplateDocumentGenerator.generateDocument(pillar1Data);
+        await ensureReportsDir();
+        const generatedFileName = `Annual_Report_Learning_Teaching_Word2007_${new Date().toISOString().slice(0, 10)}.docx`;
+        const outputPath = path.join(reportsDir, generatedFileName);
+        await fs.writeFile(outputPath, docBuffer);
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        res.setHeader('Content-Disposition', `attachment; filename="${generatedFileName}"`);
+        res.send(docBuffer);
+    } catch (error) {
+        console.error('Error generating Word 2007 compatible report:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.get('/summary-report', async (req, res) => {
+    try {
+        const monthFilter = buildMonthFilter(req.query.month);
+        const pillarRecordFilter = {
+            pillarNumber: { $in: [2, 3, 4, 5] },
+            ...monthFilter
+        };
+
+        const [
+            innovativeTeaching,
+            eContents,
+            guestLectures,
+            fdpsOrganized,
+            courseFacilitatorSessions,
+            facultyEvents,
+            studentEvents,
+            nptelMooc,
+            academicAchievements,
+            pillarRecords
+        ] = await Promise.all([
+            InnovativeTeaching.find(monthFilter),
+            EContent.find(monthFilter),
+            GuestLecture.find(monthFilter),
+            FDPOrganized.find(monthFilter),
+            CourseFacilitatorSession.find(monthFilter),
+            FacultyEventAttended.find(monthFilter),
+            StudentEventAttended.find(monthFilter),
+            NPTELMOOCCourse.find(monthFilter),
+            AcademicAchievement.find(monthFilter),
+            PillarSectionRecord.find(pillarRecordFilter)
+        ]);
+
+        const result = await MonthlySummaryService.generate(req.query.month, {
+            innovativeTeaching,
+            eContents,
+            guestLectures,
+            fdpsOrganized,
+            courseFacilitatorSessions,
+            facultyEvents,
+            studentEvents,
+            nptelMooc,
+            academicAchievements,
+            pillarRecords
+        }, {
+            provider: req.query.provider
+        });
+
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.get('/summary-report/download', async (req, res) => {
+    try {
+        const monthFilter = buildMonthFilter(req.query.month);
+        const pillarRecordFilter = {
+            pillarNumber: { $in: [2, 3, 4, 5] },
+            ...monthFilter
+        };
+
+        const [
+            innovativeTeaching,
+            eContents,
+            guestLectures,
+            fdpsOrganized,
+            courseFacilitatorSessions,
+            facultyEvents,
+            studentEvents,
+            nptelMooc,
+            academicAchievements,
+            pillarRecords
+        ] = await Promise.all([
+            InnovativeTeaching.find(monthFilter),
+            EContent.find(monthFilter),
+            GuestLecture.find(monthFilter),
+            FDPOrganized.find(monthFilter),
+            CourseFacilitatorSession.find(monthFilter),
+            FacultyEventAttended.find(monthFilter),
+            StudentEventAttended.find(monthFilter),
+            NPTELMOOCCourse.find(monthFilter),
+            AcademicAchievement.find(monthFilter),
+            PillarSectionRecord.find(pillarRecordFilter)
+        ]);
+
+        const result = await MonthlySummaryService.generate(req.query.month, {
+            innovativeTeaching,
+            eContents,
+            guestLectures,
+            fdpsOrganized,
+            courseFacilitatorSessions,
+            facultyEvents,
+            studentEvents,
+            nptelMooc,
+            academicAchievements,
+            pillarRecords
+        }, {
+            provider: req.query.provider
+        });
+
+        const docBuffer = await MonthlySummaryService.generateDocx(result.summaryMarkdown, result.month || req.query.month);
+        const safeMonth = String(result.month || req.query.month || 'All_Months').replace(/\s+/g, '_');
+        const fileName = `Monthly_Institutional_Summary_${safeMonth}.docx`;
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        res.send(docBuffer);
+    } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
@@ -810,6 +1030,229 @@ router.get('/report-history/:fileName/download', async (req, res) => {
         res.download(reportPath, safeFileName);
     } catch {
         res.status(404).json({ error: 'Report file not found.' });
+    }
+});
+
+// ==================== IMPORT/EXPORT FUNCTIONALITY ====================
+
+// Download Excel Template
+router.get('/template/download', async (req, res) => {
+    try {
+        const buffer = await TemplateExcelGenerator.generateTemplate();
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename="Pillar1_ImportTemplate.xlsx"');
+        res.send(buffer);
+    } catch (error) {
+        res.status(500).json({ error: `Failed to generate template: ${error.message}` });
+    }
+});
+
+// Parse and Preview Excel Upload
+router.post('/import/preview', excelUpload.single('excelFile'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        const parsedData = ExcelImportParser.parseExcelFile(req.file.buffer);
+
+        res.json({
+            success: !parsedData.error,
+            errors: parsedData.errors || [],
+            data: {
+                sheet1InnovativeTeaching: parsedData.sheet1InnovativeTeaching.length,
+                sheet2EContents: parsedData.sheet2EContents.length,
+                sheet3GuestLectures: parsedData.sheet3GuestLectures.length,
+                sheet3FDP: parsedData.sheet3FDP.length,
+                sheet3Facilitator: parsedData.sheet3Facilitator.length,
+                sheet4Faculty: parsedData.sheet4Faculty.length,
+                sheet5Student: parsedData.sheet5Student.length,
+                sheet6NPTEL: parsedData.sheet6NPTEL.length,
+                sheet7Academic: parsedData.sheet7Academic.length
+            },
+            preview: {
+                innovativeTeaching: parsedData.sheet1InnovativeTeaching.slice(0, 3),
+                eContents: parsedData.sheet2EContents.slice(0, 3),
+                guestLectures: parsedData.sheet3GuestLectures.slice(0, 3),
+                fdp: parsedData.sheet3FDP.slice(0, 3),
+                facilitator: parsedData.sheet3Facilitator.slice(0, 3),
+                faculty: parsedData.sheet4Faculty.slice(0, 3),
+                student: parsedData.sheet5Student.slice(0, 3),
+                nptel: parsedData.sheet6NPTEL.slice(0, 3),
+                academic: parsedData.sheet7Academic.slice(0, 3)
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: `Failed to parse Excel: ${error.message}` });
+    }
+});
+
+// Bulk Insert from Excel
+router.post('/import/bulk-insert', excelUpload.single('excelFile'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        const parsedData = ExcelImportParser.parseExcelFile(req.file.buffer);
+
+        if (parsedData.errors && parsedData.errors.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Validation errors found',
+                errors: parsedData.errors
+            });
+        }
+
+        const transformed = ExcelImportParser.transformToModels(parsedData);
+        const results = {
+            inserted: 0,
+            failed: 0,
+            details: {}
+        };
+        const errors = [];
+
+        // Insert Section 1
+        if (transformed.innovativeTeaching.length > 0) {
+            try {
+                const inserted = await InnovativeTeaching.insertMany(transformed.innovativeTeaching);
+                results.inserted += inserted.length;
+                results.details.innovativeTeaching = `${inserted.length} rows inserted`;
+            } catch (err) {
+                results.failed++;
+                results.details.innovativeTeaching = err.message;
+                errors.push(`innovativeTeaching: ${err.message}`);
+            }
+        }
+
+        // Insert Section 2
+        if (transformed.eContents.length > 0) {
+            try {
+                const inserted = await EContent.insertMany(transformed.eContents);
+                results.inserted += inserted.length;
+                results.details.eContents = `${inserted.length} rows inserted`;
+            } catch (err) {
+                results.failed++;
+                results.details.eContents = err.message;
+                errors.push(`eContents: ${err.message}`);
+            }
+        }
+
+        // Insert Section 3.1
+        if (transformed.guestLectures.length > 0) {
+            try {
+                const inserted = await GuestLecture.insertMany(transformed.guestLectures);
+                results.inserted += inserted.length;
+                results.details.guestLectures = `${inserted.length} rows inserted`;
+            } catch (err) {
+                results.failed++;
+                results.details.guestLectures = err.message;
+                errors.push(`guestLectures: ${err.message}`);
+            }
+        }
+
+        // Insert Section 3.2
+        if (transformed.fdpOrganized.length > 0) {
+            try {
+                const inserted = await FDPOrganized.insertMany(transformed.fdpOrganized);
+                results.inserted += inserted.length;
+                results.details.fdpOrganized = `${inserted.length} rows inserted`;
+            } catch (err) {
+                results.failed++;
+                results.details.fdpOrganized = err.message;
+                errors.push(`fdpOrganized: ${err.message}`);
+            }
+        }
+
+        // Insert Section 3.3
+        if (transformed.courseFacilitator.length > 0) {
+            try {
+                const inserted = await CourseFacilitatorSession.insertMany(transformed.courseFacilitator);
+                results.inserted += inserted.length;
+                results.details.courseFacilitator = `${inserted.length} rows inserted`;
+            } catch (err) {
+                results.failed++;
+                results.details.courseFacilitator = err.message;
+                errors.push(`courseFacilitator: ${err.message}`);
+            }
+        }
+
+        // Insert Section 4
+        if (transformed.facultyEvents.length > 0) {
+            try {
+                const inserted = await FacultyEventAttended.insertMany(transformed.facultyEvents);
+                results.inserted += inserted.length;
+                results.details.facultyEvents = `${inserted.length} rows inserted`;
+            } catch (err) {
+                results.failed++;
+                results.details.facultyEvents = err.message;
+                errors.push(`facultyEvents: ${err.message}`);
+            }
+        }
+
+        // Insert Section 5
+        if (transformed.studentEvents.length > 0) {
+            try {
+                const inserted = await StudentEventAttended.insertMany(transformed.studentEvents);
+                results.inserted += inserted.length;
+                results.details.studentEvents = `${inserted.length} rows inserted`;
+            } catch (err) {
+                results.failed++;
+                results.details.studentEvents = err.message;
+                errors.push(`studentEvents: ${err.message}`);
+            }
+        }
+
+        // Insert Section 6
+        if (transformed.nptelMooc.length > 0) {
+            try {
+                const inserted = await NPTELMOOCCourse.insertMany(transformed.nptelMooc);
+                results.inserted += inserted.length;
+                results.details.nptelMooc = `${inserted.length} rows inserted`;
+            } catch (err) {
+                results.failed++;
+                results.details.nptelMooc = err.message;
+                errors.push(`nptelMooc: ${err.message}`);
+            }
+        }
+
+        // Insert Section 7
+        if (transformed.academicAchievements.length > 0) {
+            try {
+                const inserted = await AcademicAchievement.insertMany(transformed.academicAchievements);
+                results.inserted += inserted.length;
+                results.details.academicAchievements = `${inserted.length} rows inserted`;
+            } catch (err) {
+                results.failed++;
+                results.details.academicAchievements = err.message;
+                errors.push(`academicAchievements: ${err.message}`);
+            }
+        }
+
+        const totalParsedRows =
+            transformed.innovativeTeaching.length +
+            transformed.eContents.length +
+            transformed.guestLectures.length +
+            transformed.fdpOrganized.length +
+            transformed.courseFacilitator.length +
+            transformed.facultyEvents.length +
+            transformed.studentEvents.length +
+            transformed.nptelMooc.length +
+            transformed.academicAchievements.length;
+
+        res.json({
+            success: results.failed === 0,
+            message:
+                totalParsedRows === 0
+                    ? 'No data rows found to insert. Please fill the template and try again.'
+                    : results.failed === 0
+                        ? `${results.inserted} records inserted successfully`
+                        : `${results.inserted} records inserted, ${results.failed} section(s) failed`,
+            results,
+            errors
+        });
+    } catch (error) {
+        res.status(500).json({ error: `Bulk insert failed: ${error.message}` });
     }
 });
 
