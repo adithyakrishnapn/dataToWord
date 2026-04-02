@@ -55,9 +55,9 @@ export default function createPillarRoutes(pillarNumber, pillarName) {
 
   router.post('/records', upload.single('image'), async (req, res) => {
     try {
-      const { sectionKey, sectionTitle, department, month, academicYear, data } = req.body;
+      const { sectionKey, sectionTitle, department, month, academicYear, data, imagePath } = req.body;
       const parsedData = parseDataField(data);
-      const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+      const resolvedImagePath = req.file ? `/uploads/${req.file.filename}` : toSafeValue(imagePath) || null;
 
       const created = await PillarSectionRecord.create({
         pillarNumber,
@@ -68,7 +68,7 @@ export default function createPillarRoutes(pillarNumber, pillarName) {
         month: toSafeValue(month),
         academicYear: toSafeValue(academicYear),
         data: parsedData,
-        imagePath,
+        imagePath: resolvedImagePath,
       });
 
       res.status(201).json({ message: 'Created', data: created });
@@ -80,7 +80,7 @@ export default function createPillarRoutes(pillarNumber, pillarName) {
   router.put('/records/:id', upload.single('image'), async (req, res) => {
     try {
       const { id } = req.params;
-      const { department, month, academicYear, data } = req.body;
+      const { department, month, academicYear, data, imagePath } = req.body;
       const parsedData = parseDataField(data);
 
       const updateData = {
@@ -98,6 +98,8 @@ export default function createPillarRoutes(pillarNumber, pillarName) {
       }
       if (req.file) {
         updateData.imagePath = `/uploads/${req.file.filename}`;
+      } else if (imagePath !== undefined) {
+        updateData.imagePath = toSafeValue(imagePath) || null;
       }
 
       const updated = await PillarSectionRecord.findOneAndUpdate(

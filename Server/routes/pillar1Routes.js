@@ -115,8 +115,8 @@ function buildMonthFilter(month) {
 // ==================== SECTION 1: INNOVATIVE TEACHING METHODOLOGIES ====================
 router.post('/innovative-teaching', upload.single('image'), async (req, res) => {
     try {
-        const { department, courseCode, courseName, topic, teachingMethod, month, academicYear } = req.body;
-        const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+        const { department, courseCode, courseName, topic, teachingMethod, month, academicYear, imagePath } = req.body;
+        const resolvedImagePath = req.file ? `/uploads/${req.file.filename}` : String(imagePath || '').trim() || null;
 
         const teaching = new InnovativeTeaching({
             department,
@@ -126,7 +126,7 @@ router.post('/innovative-teaching', upload.single('image'), async (req, res) => 
             teachingMethod,
             month,
             academicYear,
-            imagePath
+            imagePath: resolvedImagePath
         });
 
         await teaching.save();
@@ -191,8 +191,8 @@ router.get('/e-contents', async (req, res) => {
 // ==================== SECTION 3.1: GUEST LECTURES ORGANIZED ====================
 router.post('/guest-lectures', upload.single('image'), async (req, res) => {
     try {
-        const { department, workshopTitle, date, guestName, guestDesignation, month, academicYear } = req.body;
-        const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+        const { department, workshopTitle, date, guestName, guestDesignation, month, academicYear, imagePath } = req.body;
+        const resolvedImagePath = req.file ? `/uploads/${req.file.filename}` : String(imagePath || '').trim() || null;
 
         const lecture = new GuestLecture({
             department,
@@ -202,7 +202,7 @@ router.post('/guest-lectures', upload.single('image'), async (req, res) => {
             guestDesignation,
             month,
             academicYear,
-            imagePath
+            imagePath: resolvedImagePath
         });
 
         await lecture.save();
@@ -224,8 +224,8 @@ router.get('/guest-lectures', async (req, res) => {
 // ==================== SECTION 3.2: FDPs ORGANIZED ====================
 router.post('/fdps-organized', upload.single('image'), async (req, res) => {
     try {
-        const { department, fdpTitle, date, sponsoredAgency, sponsoredAmount, numberOfBeneficiaries, month, academicYear } = req.body;
-        const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+        const { department, fdpTitle, date, sponsoredAgency, sponsoredAmount, numberOfBeneficiaries, month, academicYear, imagePath } = req.body;
+        const resolvedImagePath = req.file ? `/uploads/${req.file.filename}` : String(imagePath || '').trim() || null;
 
         const fdp = new FDPOrganized({
             department,
@@ -236,7 +236,7 @@ router.post('/fdps-organized', upload.single('image'), async (req, res) => {
             numberOfBeneficiaries,
             month,
             academicYear,
-            imagePath
+            imagePath: resolvedImagePath
         });
 
         await fdp.save();
@@ -258,8 +258,8 @@ router.get('/fdps-organized', async (req, res) => {
 // ==================== SECTION 3.3: COURSE FACILITATOR SESSIONS ====================
 router.post('/course-facilitator-sessions', upload.single('image'), async (req, res) => {
     try {
-        const { department, courseName, date, facilitatorName, facilitatorDesignation, facilitatorInstitution, numberOfStudents, month, academicYear } = req.body;
-        const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+        const { department, courseName, date, facilitatorName, facilitatorDesignation, facilitatorInstitution, numberOfStudents, month, academicYear, imagePath } = req.body;
+        const resolvedImagePath = req.file ? `/uploads/${req.file.filename}` : String(imagePath || '').trim() || null;
 
         const session = new CourseFacilitatorSession({
             department,
@@ -271,7 +271,7 @@ router.post('/course-facilitator-sessions', upload.single('image'), async (req, 
             numberOfStudents,
             month,
             academicYear,
-            imagePath
+            imagePath: resolvedImagePath
         });
 
         await session.save();
@@ -293,8 +293,8 @@ router.get('/course-facilitator-sessions', async (req, res) => {
 // ==================== SECTION 4: FACULTY EVENTS ATTENDED ====================
 router.post('/faculty-events', upload.single('certificate'), async (req, res) => {
     try {
-        const { facultyName, department, eventType, eventTitle, onlineOffline, organizerDetails, placeOfEvent, date, month, academicYear } = req.body;
-        const certificatePath = req.file ? `/uploads/${req.file.filename}` : null;
+        const { facultyName, department, eventType, eventTitle, onlineOffline, organizerDetails, placeOfEvent, date, month, academicYear, certificatePath } = req.body;
+        const resolvedCertificatePath = req.file ? `/uploads/${req.file.filename}` : String(certificatePath || '').trim() || null;
 
         const event = new FacultyEventAttended({
             facultyName,
@@ -307,7 +307,7 @@ router.post('/faculty-events', upload.single('certificate'), async (req, res) =>
             date,
             month,
             academicYear,
-            certificatePath
+            certificatePath: resolvedCertificatePath
         });
 
         await event.save();
@@ -364,8 +364,8 @@ router.get('/student-events', async (req, res) => {
 // ==================== SECTION 6: NPTEL/MOOC COURSES ====================
 router.post('/nptel-mooc', upload.single('certificate'), async (req, res) => {
     try {
-        const { category, nameOfPerson, classOrDepartment, platform, courseName, duration, scoreOrCompletionDate, month, academicYear } = req.body;
-        const certificatePath = req.file ? `/uploads/${req.file.filename}` : null;
+        const { category, nameOfPerson, classOrDepartment, platform, courseName, duration, scoreOrCompletionDate, month, academicYear, certificatePath } = req.body;
+        const resolvedCertificatePath = req.file ? `/uploads/${req.file.filename}` : String(certificatePath || '').trim() || null;
 
         const course = new NPTELMOOCCourse({
             category,
@@ -377,7 +377,7 @@ router.post('/nptel-mooc', upload.single('certificate'), async (req, res) => {
             scoreOrCompletionDate,
             month,
             academicYear,
-            certificatePath
+            certificatePath: resolvedCertificatePath
         });
 
         await course.save();

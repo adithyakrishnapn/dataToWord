@@ -37,3 +37,7 @@ Server/public/generated/
 Server/public/**/*.docx
 Server/public/**/*.xlsx
 Server/report-test.docx
+**/generated-reports/
+**/generated-exports/
+**/*_generated.docx
+**/*_generated.xlsx

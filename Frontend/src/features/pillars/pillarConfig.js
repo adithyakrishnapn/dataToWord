@@ -7,7 +7,7 @@ export const academicYearOptions = ['1st year', '2nd year', '3rd year', 'final y
 
 export const pillarConfig = {
   2: {
-    name: 'Center for Creativity (CFC)',
+    name: 'Centre For Creativity',
     apiBase: '/pillar2',
     sections: [
       {
@@ -177,7 +177,7 @@ export const pillarConfig = {
     ],
   },
   3: {
-    name: 'Skill & Career Development (SCD)',
+    name: 'Skill and Career Development',
     apiBase: '/pillar3',
     sections: [
       {
@@ -253,7 +253,7 @@ export const pillarConfig = {
     ],
   },
   4: {
-    name: 'Industry Institute Partnership Cell (IIPC)',
+    name: 'Industry Institute Partnership Cell',
     apiBase: '/pillar4',
     sections: [
       {
@@ -316,7 +316,7 @@ export const pillarConfig = {
     ],
   },
   5: {
-    name: 'Social Responsibility Initiatives (SRI)',
+    name: 'Social Responsibility Initiatives',
     apiBase: '/pillar5',
     sections: [
       {
@@ -350,9 +350,9 @@ export const pillarConfig = {
 };
 
 export const pillarTabs = [
-  { id: 1, title: 'Pillar 1', subtitle: 'Learning & Teaching' },
-  { id: 2, title: 'Pillar 2', subtitle: 'Creativity' },
-  { id: 3, title: 'Pillar 3', subtitle: 'Skill & Career' },
-  { id: 4, title: 'Pillar 4', subtitle: 'IIPC' },
-  { id: 5, title: 'Pillar 5', subtitle: 'Social Responsibility' },
+  { id: 1, title: 'Center for Learning and Teaching', subtitle: 'CLT' },
+  { id: 2, title: 'Centre For Creativity', subtitle: 'CFC' },
+  { id: 3, title: 'Skill and Career Development', subtitle: 'SCD' },
+  { id: 4, title: 'Industry Institute Partnership Cell', subtitle: 'IIPC' },
+  { id: 5, title: 'Social Responsibility Initiatives', subtitle: 'SRI' },
 ];

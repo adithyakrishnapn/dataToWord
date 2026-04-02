@@ -8,9 +8,11 @@ import SectionCard from '../pillar1/components/SectionCard';
 import StatusText from '../pillar1/components/StatusText';
 import ImportExportModal from '../../components/modals/ImportExportModal';
 import MonthlySummaryPanel from '../../components/reports/MonthlySummaryPanel';
+import SectionExcelImportButton from '../../components/forms/SectionExcelImportButton';
 import { pillarConfig, months, academicYearOptions } from './pillarConfig';
 import { pillarGenericApi } from '../../services/pillarGenericApi';
 import { toAbsoluteApiUrl } from '../../config/apiConfig';
+import sectionImportService from '../../services/excel/sectionImportService';
 
 function buildInitialData(fields) {
   const initial = {};
@@ -211,8 +213,92 @@ function GenericSectionForm({ pillarId, section, selectedMonth }) {
     });
   };
 
+  const importSectionFromExcel = async (file) => {
+    const rows = await sectionImportService.readFirstSheetRows(file);
+    let inserted = 0;
+    let failed = 0;
+
+    for (const row of rows) {
+      const lookup = sectionImportService.createRowLookup(row);
+      const recordData = {};
+
+      section.fields.forEach((field) => {
+        const rawValue = sectionImportService.pickByAliases(lookup, [field.label, field.key]);
+        if (rawValue === '' || rawValue === null || rawValue === undefined) {
+          return;
+        }
+
+        if (field.type === 'number') {
+          const parsed = sectionImportService.toNumber(rawValue);
+          if (parsed !== null) {
+            recordData[field.key] = parsed;
+          }
+          return;
+        }
+
+        recordData[field.key] = String(rawValue).trim();
+      });
+
+      if (!sectionImportService.hasAnyValue(recordData, Object.keys(recordData))) {
+        continue;
+      }
+
+      const monthValue = String(sectionImportService.pickByAliases(lookup, ['Month']) || selectedMonth).trim();
+      const academicYearValue = String(
+        sectionImportService.pickByAliases(lookup, ['Academic Year', 'AcademicYear']) || '1st year'
+      ).trim();
+
+      const department = String(
+        recordData.department ||
+        recordData.departmentName ||
+        recordData.branch ||
+        recordData.className ||
+        recordData.classOrDepartment ||
+        ''
+      ).trim();
+
+      const rawImagePath = sectionImportService.pickByAliases(lookup, [
+        'Image Filename',
+        'Image Path',
+        'Image URL',
+        'Certificate Filename',
+        'Certificate Path',
+        'Certificate URL',
+      ]);
+
+      const payload = {
+        sectionKey: section.key,
+        sectionTitle: section.title,
+        department,
+        month: monthValue,
+        academicYear: academicYearValue,
+        data: recordData,
+      };
+
+      if (rawImagePath) {
+        payload.imagePath = sectionImportService.normalizeAssetPath(rawImagePath);
+      }
+
+      try {
+        await pillarGenericApi.createRecord(pillarId, payload);
+        inserted += 1;
+      } catch {
+        failed += 1;
+      }
+    }
+
+    return {
+      inserted,
+      failed,
+      message: `Imported ${inserted} records for ${section.title}${failed ? ` (${failed} failed)` : ''}.`,
+    };
+  };
+
   return (
     <form className="grid-form" onSubmit={onSubmit}>
+      <div style={{ gridColumn: '1 / -1' }}>
+        <SectionExcelImportButton sectionTitle={section.title} onImport={importSectionFromExcel} />
+      </div>
       <label className="field">
         <span>Academic Year</span>
         <select name="academicYear" value={academicYear} onChange={(e) => setAcademicYear(e.target.value)} required>
