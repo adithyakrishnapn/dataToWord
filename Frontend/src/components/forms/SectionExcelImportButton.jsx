@@ -17,6 +17,17 @@ export default function SectionExcelImportButton({ sectionTitle, onImport }) {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    const confirmed = window.confirm(
+      `Are you sure you want to import this file for ${sectionTitle}?\n\nFile: ${file.name}`
+    );
+
+    if (!confirmed) {
+      if (fileRef.current) {
+        fileRef.current.value = '';
+      }
+      return;
+    }
+
     setLoading(true);
     setStatus('');
     setError(false);
